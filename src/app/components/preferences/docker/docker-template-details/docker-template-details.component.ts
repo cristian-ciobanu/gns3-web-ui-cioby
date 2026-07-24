@@ -152,7 +152,7 @@ export class DockerTemplateDetailsComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/controller', this.controller.id, 'preferences', 'docker', 'templates']);
+    this.router.navigate(['/controller', this.controller.id, 'preferences']);
   }
 
   toggleSection(section: string) {
@@ -273,9 +273,9 @@ export class DockerTemplateDetailsComponent implements OnInit {
         adapter_type: '',
       }) as any);
     }
-    const dialogConfig = this.dialogConfig.openConfig('base', {
+    const dialogConfig = this.dialogConfig.openConfig('largeConfigurator', {
       autoFocus: false,
-      panelClass: ['base-dialog-panel', 'docker-configurator-dialog-panel'],
+      panelClass: ['docker-configurator-dialog-panel'],
       disableClose: true,
       data: {},
     });

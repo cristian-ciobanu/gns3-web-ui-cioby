@@ -15,18 +15,20 @@
   </div>
 </header>
 
-<form class="user-management__search-form">
-  <mat-form-field class="user-management__search">
-    <input
-      matInput
-      placeholder="Search by username, full name or email"
-      [value]="searchText()"
-      (input)="searchText.set($event.target.value)"
-    />
-  </mat-form-field>
-</form>
-
 <div class="user-management__table-container">
+  <form class="user-management__search-form">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="user-management__search">
+      <input
+        matInput
+        type="search"
+        aria-label="Search users"
+        placeholder="Search by username, full name or email"
+        [value]="searchText()"
+        (input)="searchText.set($event.target.value)"
+      />
+    </mat-form-field>
+  </form>
+
   <mat-table [dataSource]="dataSource | userFilter : searchText()" matSort #usersSort="matSort">
     <ng-container matColumnDef="select">
       <mat-header-cell *matHeaderCellDef class="user-management__small-col">

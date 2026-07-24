@@ -81,7 +81,7 @@ export class D3MapComponent implements OnInit, OnChanges, OnDestroy {
 
   private parentNativeElement: any;
   private svg: Selection<SVGSVGElement, any, null, undefined>;
-  private onChangesDetected: Subscription;
+  private onChangesDetected = new Subscription();
   private subscriptions: Subscription[] = [];
   private drawLinkTool: boolean;
   protected settings = {

@@ -18,7 +18,7 @@ import { ToasterService } from '@services/toaster.service';
 })
 export class InterfaceLabelDraggedComponent implements OnInit, OnDestroy {
   readonly controller = input<Controller>(undefined);
-  private interfaceDragged: Subscription;
+  private interfaceDragged = new Subscription();
 
   private linkService = inject(LinkService);
   private linksDataSource = inject(LinksDataSource);

@@ -15,7 +15,7 @@ import { Rectangle } from '../../models/rectangle';
   imports: [],
 })
 export class SelectionControlComponent implements OnInit, OnDestroy {
-  private onSelection: Subscription;
+  private onSelection = new Subscription();
 
   private selectionEventSource = inject(SelectionEventSource);
   private graphDataManager = inject(GraphDataManager);

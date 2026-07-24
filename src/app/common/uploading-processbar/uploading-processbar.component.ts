@@ -28,7 +28,7 @@ export class UploadingProcessbarComponent implements OnInit, OnDestroy {
   uploadProgress = signal<number>(0);
   label = signal<string>('');
   isComputing = signal<boolean>(false);
-  subscription: Subscription;
+  subscription = new Subscription();
   upload_file_type: string;
 
   constructor(@Inject(MAT_SNACK_BAR_DATA) public data) {}

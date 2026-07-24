@@ -11,22 +11,32 @@
     >
       Delete Selected
     </button>
-    <button mat-raised-button color="primary" class="acl-management__button" (click)="addACE()" matTooltip="Add access control entry">Add ACE</button>
+    <button
+      mat-raised-button
+      color="primary"
+      class="acl-management__button"
+      (click)="addACE()"
+      matTooltip="Add access control entry"
+    >
+      Add ACE
+    </button>
   </div>
 </header>
 
-<form class="acl-management__search-form">
-  <mat-form-field class="acl-management__search">
-    <input
-      matInput
-      placeholder="Search by path, user/group or role"
-      [value]="searchText()"
-      (input)="searchText.set($event.target.value)"
-    />
-  </mat-form-field>
-</form>
-
 <div class="acl-management__table-container">
+  <form class="acl-management__search-form">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="acl-management__search">
+      <input
+        matInput
+        type="search"
+        aria-label="Search access control entries"
+        placeholder="Search by path, user/group or role"
+        [value]="searchText()"
+        (input)="searchText.set($event.target.value)"
+      />
+    </mat-form-field>
+  </form>
+
   <table mat-table [dataSource]="dataSource | aceFilter : searchText() : endpoints()" matSort #acesSort="matSort">
     <ng-container matColumnDef="select">
       <th mat-header-cell *matHeaderCellDef class="acl-management__small-col">

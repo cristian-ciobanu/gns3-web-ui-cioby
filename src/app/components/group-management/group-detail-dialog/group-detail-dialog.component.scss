@@ -122,7 +122,7 @@
 
   &__members-list {
     background: var(--mat-sys-surface-container-low);
-    border-radius: 8px;
+    border-radius: var(--gns3-radius-control);
     padding: 8px 0;
 
     ul {
@@ -164,7 +164,7 @@
   &__ace-table {
     width: 100%;
     background: var(--mat-sys-surface-container-low);
-    border-radius: 8px;
+    border-radius: var(--gns3-radius-control);
     overflow: hidden;
 
     .mat-header-row {

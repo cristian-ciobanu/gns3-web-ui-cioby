@@ -1,21 +1,28 @@
-<section class="management__header">
-  <div class="management__header-content">
-    <h1 class="management__title">Controller Management</h1>
-  </div>
-</section>
+<section class="management" aria-labelledby="management-title">
+  <header class="management__header">
+    <div class="management__heading">
+      <h1 id="management-title" class="management__title">Management</h1>
+    </div>
+  </header>
 
-<section class="management__tab-nav">
-  <mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
-  <nav mat-tab-nav-bar [tabPanel]="tabPanel">
-    @for (link of links(); track link.route) {
-    <a mat-tab-link class="management__tab-link" routerLink="./{{ link.route }}" routerLinkActive #rla="routerLinkActive">
-      <mat-icon class="management__tab-icon">{{ link.icon }}</mat-icon>
-      {{ link.label }}
-    </a>
-    }
-  </nav>
-</section>
-
-<section class="management__content">
-  <router-outlet></router-outlet>
+  <section class="management__workspace" aria-label="Management categories">
+    <nav class="management__tab-nav" mat-tab-nav-bar [tabPanel]="tabPanel" aria-label="Management categories">
+      @for (link of links(); track link.route) {
+      <a
+        mat-tab-link
+        class="management__tab-link"
+        routerLink="./{{ link.route }}"
+        routerLinkActive
+        #rla="routerLinkActive"
+        [active]="rla.isActive"
+      >
+        <mat-icon class="management__tab-icon">{{ link.icon }}</mat-icon>
+        {{ link.label }}
+      </a>
+      }
+    </nav>
+    <mat-tab-nav-panel #tabPanel class="management__content">
+      <router-outlet></router-outlet>
+    </mat-tab-nav-panel>
+  </section>
 </section>

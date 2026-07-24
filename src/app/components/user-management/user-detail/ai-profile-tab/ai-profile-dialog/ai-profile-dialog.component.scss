@@ -139,7 +139,6 @@
 
         &:hover mat-icon {
           color: var(--mat-sys-primary);
-          transform: scale(1.1);
         }
       }
     }
@@ -214,7 +213,7 @@
           }
 
           &:hover mat-icon {
-            transform: scale(1.1);
+            color: var(--mat-sys-on-error-container);
           }
         }
       }
@@ -302,7 +301,7 @@
       margin-top: 16px;
       background: var(--mat-sys-surface-container);
       border: 1px solid var(--mat-sys-outline-variant);
-      border-radius: 8px;
+      border-radius: var(--gns3-radius-control);
 
       .info-icon {
         flex-shrink: 0;
@@ -336,7 +335,7 @@
       margin-bottom: 20px;
       padding: 16px;
       background: var(--mat-sys-surface-container);
-      border-radius: 8px;
+      border-radius: var(--gns3-radius-control);
 
       h3 {
         margin: 0;

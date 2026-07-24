@@ -19,7 +19,7 @@ import { ToasterService } from '@services/toaster.service';
 })
 export class NodeLabelDraggedComponent implements OnInit, OnDestroy {
   readonly controller = input<Controller>(undefined);
-  private nodeLabelDragged: Subscription;
+  private nodeLabelDragged = new Subscription();
 
   private nodesDataSource = inject(NodesDataSource);
   private nodeService = inject(NodeService);

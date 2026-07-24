@@ -17,18 +17,20 @@
   </div>
 </header>
 
-<form class="resource-pools-management__search-form">
-  <mat-form-field class="resource-pools-management__search">
-    <input
-      matInput
-      placeholder="Search resource pool by name"
-      [value]="searchText()"
-      (input)="searchText.set($event.target.value)"
-    />
-  </mat-form-field>
-</form>
-
 <div class="resource-pools-management__table-container">
+  <form class="resource-pools-management__search-form">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="resource-pools-management__search">
+      <input
+        matInput
+        type="search"
+        aria-label="Search resource pools"
+        placeholder="Search resource pool by name"
+        [value]="searchText()"
+        (input)="searchText.set($event.target.value)"
+      />
+    </mat-form-field>
+  </form>
+
   <table mat-table [dataSource]="dataSource | resourcePoolsFilter : searchText()" matSort #resourcePoolsSort="matSort">
     <ng-container matColumnDef="select">
       <th mat-header-cell *matHeaderCellDef class="resource-pools-management__small-col">

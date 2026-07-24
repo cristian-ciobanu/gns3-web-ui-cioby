@@ -17,7 +17,7 @@
   margin-bottom: 16px;
   padding: 8px;
   background-color: var(--mat-sys-surface-container);
-  border-radius: 8px;
+  border-radius: var(--gns3-radius-control);
 
   .zoom-level {
     min-width: 50px;
@@ -83,7 +83,6 @@
   align-items: center;
   justify-content: center;
   background-color: transparent;
-  transition: transform 0.2s ease;
   z-index: 1;
 
   mat-icon {
@@ -92,10 +91,6 @@
     height: auto;
   }
 
-  &:hover {
-    transform: scale(1.2);
-    background-color: transparent;
-  }
 }
 
 .menu {
@@ -138,7 +133,7 @@
 .symbol-item {
   &.delete-mode {
     padding: 2px;
-    border-radius: 4px;
+    border-radius: var(--gns3-radius-small);
   }
 }
 

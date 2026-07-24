@@ -432,7 +432,7 @@ export class QemuVmTemplateDetailsComponent implements OnInit {
   onHddImageInput(event: Event) { this.filteredImages = this.filterImages(event); }
 
   goBack() {
-    this.router.navigate(['/controller', this.controller.id, 'preferences', 'qemu', 'templates']);
+    this.router.navigate(['/controller', this.controller.id, 'preferences']);
   }
 
   onSave() {

@@ -81,7 +81,7 @@
   font-size: 13px;
   font-weight: 500;
   border: 1px solid var(--mat-sys-outline-variant);
-  border-radius: 8px;
+  border-radius: var(--gns3-radius-control);
   color: var(--mat-sys-on-surface);
   display: flex;
   align-items: center;
@@ -217,7 +217,7 @@
   gap: 12px;
   padding: 12px 16px;
   background: var(--mat-sys-surface-container-low);
-  border-radius: 8px;
+  border-radius: var(--gns3-radius-control);
   border-left: 3px solid var(--mat-sys-outline);
 
   &.success {

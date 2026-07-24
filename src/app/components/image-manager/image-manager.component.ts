@@ -1,6 +1,16 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject, signal, viewChild, model } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+  model,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ControllerService } from '@services/controller.service';
 import { Image } from '@models/images';
@@ -23,8 +33,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatListModule } from '@angular/material/list';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-image-manager',
@@ -33,7 +43,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   imports: [
     CommonModule,
     RouterModule,
-    FormsModule,
     MatDialogModule,
     MatSortModule,
     MatPaginatorModule,
@@ -44,20 +53,22 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatInputModule,
     MatCheckboxModule,
     MatProgressBarModule,
-    MatListModule,
+    MatSelectModule,
     MatTooltipModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ImageManagerComponent implements OnInit, OnDestroy {
+export class ImageManagerComponent implements OnInit, AfterViewInit, OnDestroy {
   controller: Controller;
   controllerId: number;
   public version: string;
   dataSource: imageDataSource;
   imageDatabase = new imageDatabase();
   readonly searchText = model('');
-  isAllDelete: boolean = false;
+  readonly imageTypeFilter = model('all');
+  readonly imageTypes = signal<string[]>([]);
   selectedPaths = new Set<string>();
+  detailsRow: ImageTableRow | null = null;
   private images: Image[] = [];
   private uploadRows = new Map<string, ImageTableRow>();
   private uploadEventsSubscription: Subscription;
@@ -71,11 +82,10 @@ export class ImageManagerComponent implements OnInit, OnDestroy {
   // Pagination properties
   pageSizeOptions: number[] = [5, 10, 25, 50, 100];
   defaultPageSize = 10;
-  currentPage = 0;
 
-  readonly displayedColumns = signal(['select', 'filename', 'image_type', 'image_size', 'created_at', 'delete']);
-  readonly sort = viewChild(MatSort);
-  readonly paginator = viewChild(MatPaginator);
+  readonly displayedColumns = signal(['select', 'filename', 'image_type', 'image_size', 'created_at', 'actions']);
+  readonly sort = viewChild.required(MatSort);
+  readonly paginator = viewChild.required(MatPaginator);
 
   private imageService = inject(ImageManagerService);
   private route = inject(ActivatedRoute);
@@ -90,26 +100,6 @@ export class ImageManagerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.controllerId = parseInt(this.route.snapshot.paramMap.get('controller_id'), 10);
-    const sort = this.sort();
-    if (sort) {
-      sort.sort(<MatSortable>{
-        id: 'filename',
-        start: 'asc',
-      });
-    }
-
-    // Initialize paginator
-    const paginator = this.paginator();
-    if (paginator) {
-      paginator.pageIndex = this.currentPage;
-      paginator.pageSize = this.defaultPageSize;
-    }
-
-    this.dataSource = new imageDataSource(this.imageDatabase, sort, paginator);
-    this.dataRowsSubscription = this.dataSource.connect().subscribe((rows: ImageTableRow[]) => {
-      this.displayedRows = rows || [];
-    });
-
     this.uploadEventsSubscription = this.imageUploadSessionService.events$.subscribe((event: ImageUploadEvent) => {
       this.onUploadEvent(event);
     });
@@ -136,6 +126,24 @@ export class ImageManagerComponent implements OnInit, OnDestroy {
     );
   }
 
+  ngAfterViewInit(): void {
+    const sort = this.sort();
+    const paginator = this.paginator();
+    sort.sort(<MatSortable>{
+      id: 'filename',
+      start: 'asc',
+    });
+    paginator.pageIndex = 0;
+    paginator.pageSize = this.defaultPageSize;
+
+    this.dataSource = new imageDataSource(this.imageDatabase, sort, paginator);
+    this.dataRowsSubscription = this.dataSource.connect().subscribe((rows: ImageTableRow[]) => {
+      this.displayedRows = rows || [];
+      this.cd.markForCheck();
+    });
+    this.cd.detectChanges();
+  }
+
   ngOnDestroy(): void {
     if (this.uploadEventsSubscription) {
       this.uploadEventsSubscription.unsubscribe();
@@ -155,6 +163,7 @@ export class ImageManagerComponent implements OnInit, OnDestroy {
     this.imageService.getImages(this.controller).subscribe({
       next: (images: Image[]) => {
         this.images = images || [];
+        this.syncDetailsRow();
         this.syncUploadedRowsWithPersistedData();
         this.refreshTableRows();
         this.cd.markForCheck();
@@ -167,15 +176,22 @@ export class ImageManagerComponent implements OnInit, OnDestroy {
     });
   }
 
-  onPageEvent(event: any) {
-    this.currentPage = event.pageIndex;
-  }
-
   onSearchChange(value: string) {
     this.searchText.set(value);
     if (this.dataSource) {
       this.dataSource.setFilter(value);
       // Reset to first page when searching
+      const paginator = this.paginator();
+      if (paginator) {
+        paginator.pageIndex = 0;
+      }
+    }
+  }
+
+  onTypeFilterChange(value: string) {
+    this.imageTypeFilter.set(value || 'all');
+    if (this.dataSource) {
+      this.dataSource.setTypeFilter(this.imageTypeFilter());
       const paginator = this.paginator();
       if (paginator) {
         paginator.pageIndex = 0;
@@ -224,8 +240,11 @@ export class ImageManagerComponent implements OnInit, OnDestroy {
 
       this.imageService.deleteFile(this.controller, path).subscribe({
         next: () => {
+          this.selectedPaths.delete(path);
+          if (this.detailsRow?.path === path) {
+            this.closeImageDetails();
+          }
           this.getImages();
-          this.unChecked();
           this.toasterService.success('File deleted');
           this.cd.markForCheck();
         },
@@ -233,7 +252,6 @@ export class ImageManagerComponent implements OnInit, OnDestroy {
           const message = err.error?.message || err.message || 'Failed to delete file';
           this.toasterService.error(message);
           this.getImages();
-          this.unChecked();
           this.cd.markForCheck();
         },
       });
@@ -246,6 +264,17 @@ export class ImageManagerComponent implements OnInit, OnDestroy {
     }
     this.imageUploadSessionService.requestCancel(row.tempId);
     this.toasterService.warning('Image file uploading canceled');
+  }
+
+  openImageDetails(row: ImageTableRow): void {
+    if (!this.isPersistedRow(row)) {
+      return;
+    }
+    this.detailsRow = row;
+  }
+
+  closeImageDetails(): void {
+    this.detailsRow = null;
   }
 
   onRowCheckboxClick(event: MouseEvent, row: ImageTableRow) {
@@ -291,7 +320,6 @@ export class ImageManagerComponent implements OnInit, OnDestroy {
 
   unChecked() {
     this.selectedPaths.clear();
-    this.isAllDelete = false;
     this.lastSelectedPath = null;
   }
 
@@ -301,7 +329,6 @@ export class ImageManagerComponent implements OnInit, OnDestroy {
         this.selectedPaths.add(row.path);
       }
     });
-    this.isAllDelete = true;
   }
 
   hasSelection(): boolean {
@@ -372,28 +399,33 @@ export class ImageManagerComponent implements OnInit, OnDestroy {
       data: this.controller,
     });
 
-    dialogRef.afterClosed().subscribe((isAddes: boolean) => {
+    dialogRef.afterClosed().subscribe(() => {
       this.getImages();
       this.unChecked();
     });
   }
 
   deleteAllFiles() {
+    const selectedRows = this.getSelectedRows();
+    const selectedPaths = new Set(selectedRows.map((row) => row.path));
     const dialogRef = this.dialog.open(DeleteAllImageFilesDialogComponent, {
       panelClass: ['base-confirmation-dialog-panel', 'confirmation-danger-panel', 'delete-all-images-dialog-panel'],
       autoFocus: false,
       disableClose: true,
       data: {
         controller: this.controller,
-        deleteFilesPaths: this.getSelectedRows(),
+        deleteFilesPaths: selectedRows,
       },
     });
 
     dialogRef.afterClosed().subscribe((isAllfilesdeleted: boolean) => {
       if (isAllfilesdeleted) {
         this.unChecked();
+        if (this.detailsRow?.path && selectedPaths.has(this.detailsRow.path)) {
+          this.closeImageDetails();
+        }
         this.getImages();
-        this.toasterService.success('All files deleted');
+        this.toasterService.success('Selected images deleted');
       } else {
         this.unChecked();
         this.getImages();
@@ -448,6 +480,18 @@ export class ImageManagerComponent implements OnInit, OnDestroy {
   private refreshTableRows() {
     const persistedRows = this.images.map((image: Image) => ({ ...image, rowType: 'image' as const }));
     const uploadingRows = Array.from(this.uploadRows.values());
+    const imageTypes = Array.from(
+      new Set(
+        [...uploadingRows, ...persistedRows]
+          .map((row) => String(row.image_type || '').trim())
+          .filter((imageType) => !!imageType)
+      )
+    ).sort((first, second) => first.localeCompare(second));
+    this.imageTypes.set(imageTypes);
+    if (this.imageTypeFilter() !== 'all' && !imageTypes.includes(this.imageTypeFilter())) {
+      this.imageTypeFilter.set('all');
+      this.dataSource?.setTypeFilter('all');
+    }
     this.removeInvalidSelections(persistedRows);
     this.imageDatabase.addImages([...uploadingRows, ...persistedRows]);
   }
@@ -471,6 +515,15 @@ export class ImageManagerComponent implements OnInit, OnDestroy {
         this.uploadRows.delete(key);
       }
     });
+  }
+
+  private syncDetailsRow() {
+    if (!this.detailsRow?.path) {
+      return;
+    }
+
+    const updatedImage = this.images.find((image) => image.path === this.detailsRow.path);
+    this.detailsRow = updatedImage ? { ...updatedImage, rowType: 'image' } : null;
   }
 
   private getSelectableRows(): ImageTableRow[] {

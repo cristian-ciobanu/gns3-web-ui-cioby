@@ -77,7 +77,7 @@
   justify-content: space-between;
   padding: 8px 8px;
   margin-bottom: 4px;
-  border-radius: 4px;
+  border-radius: var(--gns3-radius-small);
   cursor: pointer;
   transition: background-color 100ms ease;
   background: var(--mat-sys-surface-container-low);

@@ -336,7 +336,7 @@
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
-    border-radius: 16px;
+    border-radius: var(--gns3-radius-surface);
     font-size: 13px;
     font-weight: 500;
 
@@ -391,7 +391,7 @@
     gap: 8px;
     padding: 12px 16px;
     background: var(--mat-sys-primary-container);
-    border-radius: 8px;
+    border-radius: var(--gns3-radius-control);
     margin-top: 12px;
 
     mat-progress-bar {

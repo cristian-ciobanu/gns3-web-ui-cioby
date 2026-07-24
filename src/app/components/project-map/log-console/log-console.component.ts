@@ -73,13 +73,13 @@ export class LogConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private version = version;
-  private nodeSubscription: Subscription;
-  private linkSubscription: Subscription;
-  private drawingSubscription: Subscription;
-  private controllerRequestsSubscription: Subscription;
-  private errorSubscription: Subscription;
-  private warningSubscription: Subscription;
-  private infoSubscription: Subscription;
+  private nodeSubscription = new Subscription();
+  private linkSubscription = new Subscription();
+  private drawingSubscription = new Subscription();
+  private controllerRequestsSubscription = new Subscription();
+  private errorSubscription = new Subscription();
+  private warningSubscription = new Subscription();
+  private infoSubscription = new Subscription();
 
   readonly command = model('');
   public filters: string[] = ['all', 'errors', 'warnings', 'info', 'map updates', 'controller requests'];

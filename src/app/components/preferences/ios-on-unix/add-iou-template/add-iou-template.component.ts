@@ -177,7 +177,7 @@ export class AddIouTemplateComponent implements OnInit, OnDestroy {
   }
 
   goBack() {
-    this.router.navigate(['/controller', this.controller().id, 'preferences', 'iou', 'templates']);
+    this.router.navigate(['/controller', this.controller().id, 'preferences']);
   }
 
   addTemplate() {

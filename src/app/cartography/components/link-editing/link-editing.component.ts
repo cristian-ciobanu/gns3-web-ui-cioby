@@ -19,7 +19,7 @@ import { StyleTranslator } from '../../widgets/links/style-translator';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LinkEditingComponent implements OnInit, OnDestroy {
-  private linkEditedSubscription: Subscription;
+  private linkEditedSubscription = new Subscription();
   readonly svg = input<SVGSVGElement>(undefined);
   readonly controller = input<Controller>(undefined);
 

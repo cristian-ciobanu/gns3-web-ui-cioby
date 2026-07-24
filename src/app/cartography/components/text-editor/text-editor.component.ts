@@ -55,7 +55,7 @@ export class TextEditorComponent implements OnInit, OnDestroy {
 
   private mapListener: Function;
   private textListener: Function;
-  private textAddingSubscription: Subscription;
+  private textAddingSubscription = new Subscription();
   public addingFinished = new EventEmitter<any>();
 
   private drawingsEventSource = inject(DrawingsEventSource);

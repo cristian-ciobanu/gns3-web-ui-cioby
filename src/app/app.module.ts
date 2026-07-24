@@ -245,9 +245,6 @@ import { IouConfigurationService } from '@services/iou-configuration.service';
 import { IouService } from '@services/iou.service';
 import { LinkService } from '@services/link.service';
 import { MapScaleService } from '@services/mapScale.service';
-import { MarkerFlashService } from '@services/marker-flash.service';
-import { MarkerRegistryService } from '@services/marker-registry.service';
-import { MarkerService } from '@services/marker.service';
 import { MapSettingsService } from '@services/mapsettings.service';
 import { NodeService } from '@services/node.service';
 import { NodeConsoleService } from '@services/nodeConsole.service';
@@ -668,9 +665,6 @@ import { GlobalUploadIndicatorComponent } from '@components/global-upload-indica
     TemplateService,
     NodeService,
     LinkService,
-    MarkerService,
-    MarkerFlashService,
-    MarkerRegistryService,
     DrawingService,
     HttpController,
     SnapshotService,

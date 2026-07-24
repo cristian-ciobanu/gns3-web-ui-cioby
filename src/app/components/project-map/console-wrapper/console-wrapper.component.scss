@@ -20,7 +20,7 @@
   color: var(--mat-sys-on-surface);
   overflow: hidden;
   font-size: 12px;
-  border-radius: 4px;
+  border-radius: var(--gns3-radius-small);
   outline: none;
   transition: box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 900;
@@ -58,7 +58,7 @@
   user-select: none;
   transition: background-color 150ms var(--mat-sys-motion-easing-linear);
   background: var(--mat-sys-surface);
-  border-radius: 8px;
+  border-radius: var(--gns3-radius-control);
   box-shadow: 0 2px 8px color-mix(in srgb, var(--mat-sys-shadow) 25%, transparent),
     0 0 0 1px var(--mat-sys-outline-variant);
 
@@ -195,7 +195,7 @@
   &.active {
     color: var(--mat-sys-primary);
     background: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
-    border-radius: 4px;
+    border-radius: var(--gns3-radius-small);
   }
 
   &--close {
@@ -272,7 +272,7 @@
   width: 28px;
   height: 22px;
   flex-shrink: 0;
-  border-radius: 4px;
+  border-radius: var(--gns3-radius-small);
   background-color: var(--swatch-color);
   // inset shadow renders on top of fill so the visible colored area is always the full 28×22px,
   // regardless of whether the fill is light or dark (unlike border which reduces layout area)
@@ -328,7 +328,7 @@
   height: 26px;
   border: none;
   background: transparent;
-  border-radius: 4px;
+  border-radius: var(--gns3-radius-small);
   cursor: pointer;
   color: var(--mat-sys-on-surface-variant);
   padding: 0;
@@ -373,7 +373,7 @@
   color: var(--mat-sys-on-surface);
   background: var(--mat-sys-surface-container);
   border: 1px solid var(--mat-sys-outline-variant);
-  border-radius: 4px;
+  border-radius: var(--gns3-radius-small);
   cursor: pointer;
   appearance: auto;
   transition: border-color 120ms ease;
@@ -408,7 +408,7 @@
   width: 22px;
   height: 22px;
   border: 1px solid var(--mat-sys-outline-variant);
-  border-radius: 4px;
+  border-radius: var(--gns3-radius-small);
   background: transparent;
   color: var(--mat-sys-on-surface);
   cursor: pointer;

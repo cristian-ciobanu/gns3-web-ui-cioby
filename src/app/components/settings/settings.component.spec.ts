@@ -8,6 +8,7 @@ import { ToasterService } from '@services/toaster.service';
 import { UpdatesService } from '@services/updates.service';
 import { ControllerService } from '@services/controller.service';
 import { AiChatService } from '@services/ai-chat.service';
+import { ConsoleService } from '@services/settings/console.service';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 describe('SettingsComponent', () => {
@@ -21,6 +22,7 @@ describe('SettingsComponent', () => {
   let mockUpdatesService: any;
   let mockControllerService: any;
   let mockAiChatService: any;
+  let mockConsoleService: any;
   let mockActivatedRoute: any;
   let windowOpenSpy: ReturnType<typeof vi.spyOn>;
 
@@ -60,6 +62,8 @@ describe('SettingsComponent', () => {
     mockSettingsService = {
       getAll: vi.fn().mockReturnValue({ ...mockSettings }),
       setAll: vi.fn(),
+      setReportsSettings: vi.fn(),
+      setStatisticsSettings: vi.fn(),
     };
 
     mockThemeService = {
@@ -82,6 +86,7 @@ describe('SettingsComponent', () => {
 
     mockToasterService = {
       success: vi.fn(),
+      error: vi.fn(),
     };
 
     mockUpdatesService = {};
@@ -99,6 +104,10 @@ describe('SettingsComponent', () => {
           callbacks.complete();
         }),
       }),
+    };
+
+    mockConsoleService = {
+      command: 'telnet %h %p',
     };
 
     mockActivatedRoute = {
@@ -119,6 +128,7 @@ describe('SettingsComponent', () => {
         { provide: UpdatesService, useValue: mockUpdatesService },
         { provide: ControllerService, useValue: mockControllerService },
         { provide: AiChatService, useValue: mockAiChatService },
+        { provide: ConsoleService, useValue: mockConsoleService },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
       ],
     }).compileComponents();
@@ -147,6 +157,39 @@ describe('SettingsComponent', () => {
     it('should initialize theme settings', () => {
       expect(component.mapTheme).toBe('auto');
       expect(component.currentTheme).toBe('deeppurple-amber');
+    });
+
+    it('should initialize the console command', () => {
+      expect(component.consoleCommand()).toBe('telnet %h %p');
+    });
+
+    it('should start in the General category', () => {
+      expect(component.activeCategory()).toBe('general');
+    });
+  });
+
+  describe('category navigation', () => {
+    it('should expose all requested settings categories', () => {
+      expect(component.categories.map((category) => category.label)).toEqual([
+        'General',
+        'Appearance',
+        'Project workspace',
+        'Console',
+        'Privacy and diagnostics',
+        'Updates',
+        'AI',
+      ]);
+    });
+
+    it('should render visual theme tiles and the global save action', () => {
+      component.selectCategory('appearance');
+      fixture.detectChanges();
+
+      const element = fixture.nativeElement as HTMLElement;
+      expect(element.querySelectorAll('.settings__theme-tile')).toHaveLength(
+        mockThemes.length + mockMapBackgrounds.length
+      );
+      expect(element.textContent).toContain('Save Settings');
     });
   });
 
@@ -187,27 +230,76 @@ describe('SettingsComponent', () => {
     });
   });
 
-  describe('save', () => {
-    it('should save settings via SettingsService', () => {
-      component.save();
-      expect(mockSettingsService.setAll).toHaveBeenCalledWith(mockSettings);
+  describe('explicit persistence', () => {
+    it('should stage privacy changes until Save is clicked', () => {
+      component.setCrashReports(false);
+      component.setAnonymousStatistics(true);
+
+      expect(component.crashReports()).toBe(false);
+      expect(component.anonymousStatistics()).toBe(true);
+      expect(component.isDirty()).toBe(true);
+      expect(mockSettingsService.setAll).not.toHaveBeenCalled();
     });
 
-    it('should show success toaster message', () => {
-      component.save();
-      expect(mockToasterService.success).toHaveBeenCalledWith('Settings have been saved.');
+    it('should stage project workspace changes until Save is clicked', () => {
+      component.setIntegrateLinkLabels(false);
+      component.setOpenReadme(true);
+
+      expect(component.integrateLinksLabelsToLinks()).toBe(false);
+      expect(component.openReadme()).toBe(true);
+      expect(component.isDirty()).toBe(true);
+      expect(mockMapSettingsService.toggleIntegrateInterfaceLabels).not.toHaveBeenCalled();
+      expect(mockMapSettingsService.toggleOpenReadme).not.toHaveBeenCalled();
     });
 
-    it('should toggle map settings', () => {
-      component.integrateLinksLabelsToLinks.set(false);
-      component.openReadme.set(true);
-      component.openConsolesInWidget.set(true);
+    it('should stage console settings until Save is clicked', () => {
+      component.setOpenConsolesInWidget(true);
+      component.setConsoleCommand('kitty telnet %h %p');
 
-      component.save();
+      expect(component.openConsolesInWidget()).toBe(true);
+      expect(component.consoleCommand()).toBe('kitty telnet %h %p');
+      expect(mockMapSettingsService.toggleOpenConsolesInWidget).not.toHaveBeenCalled();
+      expect(mockConsoleService.command).toBe('telnet %h %p');
+    });
 
+    it('should navigate between categories without saving explicitly', () => {
+      component.selectCategory('appearance');
+
+      expect(component.activeCategory()).toBe('appearance');
+      expect(mockSettingsService.setAll).not.toHaveBeenCalled();
+    });
+
+    it('should save the complete current settings snapshot from the global action', () => {
+      component.setCrashReports(false);
+      component.setAnonymousStatistics(true);
+      component.setConsoleCommand('kitty telnet %h %p');
+      component.setIntegrateLinkLabels(false);
+      component.setOpenReadme(true);
+      component.setOpenConsolesInWidget(true);
+
+      component.saveSettings();
+
+      expect(mockSettingsService.setAll).toHaveBeenCalledWith({
+        crash_reports: false,
+        anonymous_statistics: true,
+        console_command: 'kitty telnet %h %p',
+      });
       expect(mockMapSettingsService.toggleIntegrateInterfaceLabels).toHaveBeenCalledWith(false);
       expect(mockMapSettingsService.toggleOpenReadme).toHaveBeenCalledWith(true);
       expect(mockMapSettingsService.toggleOpenConsolesInWidget).toHaveBeenCalledWith(true);
+      expect(mockConsoleService.command).toBe('kitty telnet %h %p');
+      expect(component.isDirty()).toBe(false);
+      expect(mockToasterService.success).toHaveBeenCalledWith('Settings saved');
+    });
+
+    it('should protect unsaved settings when navigating away', () => {
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      component.setCrashReports(false);
+
+      expect(component.canDeactivate()).toBe(false);
+      expect(confirmSpy).toHaveBeenCalledWith('You have unsaved settings. Leave without saving them?');
+
+      confirmSpy.mockRestore();
     });
   });
 
@@ -215,6 +307,10 @@ describe('SettingsComponent', () => {
     it('should call themeService.setTheme with the selected theme', () => {
       const newTheme: PrebuiltTheme = 'pink-bluegrey';
       component.setTheme(newTheme);
+      expect(mockThemeService.setTheme).not.toHaveBeenCalled();
+
+      component.saveSettings();
+
       expect(mockThemeService.setTheme).toHaveBeenCalledWith(newTheme);
     });
 
@@ -231,8 +327,13 @@ describe('SettingsComponent', () => {
       expect(component.mapTheme).toBe('dark');
     });
 
-    it('should call themeService.setMapTheme', () => {
+    it('should apply the map theme only when Save is clicked', () => {
       component.setMapTheme('dark');
+
+      expect(mockThemeService.setMapTheme).not.toHaveBeenCalled();
+
+      component.saveSettings();
+
       expect(mockThemeService.setMapTheme).toHaveBeenCalledWith('dark');
     });
   });

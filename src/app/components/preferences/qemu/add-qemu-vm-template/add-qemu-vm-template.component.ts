@@ -225,7 +225,7 @@ export class AddQemuVmTemplateComponent implements OnInit, OnDestroy {
   }
 
   goBack() {
-    this.router.navigate(['/controller', this.controller().id, 'preferences', 'qemu', 'templates']);
+    this.router.navigate(['/controller', this.controller().id, 'preferences']);
   }
 
   addTemplate() {

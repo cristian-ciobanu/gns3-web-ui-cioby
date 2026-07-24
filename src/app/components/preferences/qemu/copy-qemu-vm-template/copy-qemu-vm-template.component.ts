@@ -89,7 +89,7 @@ export class CopyQemuVmTemplateComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/controller', this.controller.id, 'preferences', 'qemu', 'templates']);
+    this.router.navigate(['/controller', this.controller.id, 'preferences']);
   }
 
   addTemplate() {

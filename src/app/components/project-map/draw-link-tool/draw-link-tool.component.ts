@@ -26,7 +26,7 @@ export class DrawLinkToolComponent implements OnInit, OnDestroy {
   readonly links = input<Link[]>(undefined);
   readonly nodeSelectInterfaceMenu = viewChild(NodeSelectInterfaceComponent);
 
-  private nodeClicked$: Subscription;
+  private nodeClicked$ = new Subscription();
 
   private drawingLineTool = inject(DrawingLineWidget);
   private nodesEventSource = inject(NodesEventSource);

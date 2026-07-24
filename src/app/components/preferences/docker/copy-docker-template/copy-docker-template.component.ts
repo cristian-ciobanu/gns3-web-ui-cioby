@@ -88,7 +88,7 @@ export class CopyDockerTemplateComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/controller', this.controller.id, 'preferences', 'docker', 'templates']);
+    this.router.navigate(['/controller', this.controller.id, 'preferences']);
   }
 
   addTemplate() {

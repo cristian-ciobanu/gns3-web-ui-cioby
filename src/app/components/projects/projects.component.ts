@@ -11,7 +11,6 @@ import {
   viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
@@ -25,7 +24,6 @@ import { ProjectService } from '@services/project.service';
 import { NotificationService, ProjectNotification } from '@services/notification.service';
 import { RecentlyOpenedProjectService } from '@services/recentlyOpenedProject.service';
 import { Settings, SettingsService } from '@services/settings.service';
-import { ThemeService } from '@services/theme.service';
 import { ToasterService } from '@services/toaster.service';
 import { AddBlankProjectDialogComponent } from './add-blank-project-dialog/add-blank-project-dialog.component';
 import { ChooseNameDialogComponent } from './choose-name-dialog/choose-name-dialog.component';
@@ -41,8 +39,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ScrollingModule } from '@angular/cdk/scrolling';
-import { version } from '../../version';
 
 @Component({
   selector: 'app-projects',
@@ -50,7 +49,6 @@ import { version } from '../../version';
   styleUrl: './projects.component.scss',
   imports: [
     CommonModule,
-    FormsModule,
     RouterModule,
     MatBottomSheetModule,
     MatDialogModule,
@@ -62,6 +60,8 @@ import { version } from '../../version';
     MatInputModule,
     MatCheckboxModule,
     MatProgressSpinnerModule,
+    MatSelectModule,
+    MatTooltipModule,
     ScrollingModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -70,14 +70,12 @@ export class ProjectsComponent implements OnInit {
   controller: Controller;
   settings: Settings;
   project: Project;
-  displayedColumns = ['select', 'name', 'created_by', 'actions', 'delete'];
-  public readonly version = version;
-  public readonly currentYear = new Date().getFullYear();
-  isAllDelete = false;
+  displayedColumns = ['select', 'name', 'status', 'created_by', 'actions'];
   selection = new SelectionModel<Project>(true, []);
 
   readonly sort = viewChild<MatSort>(MatSort);
   readonly searchText = model('');
+  readonly statusFilter = model<'all' | 'opened' | 'closed'>('all');
 
   // ── Signal state ──────────────────────────────────────────────
   private _projects = signal<Project[]>([]);
@@ -90,12 +88,15 @@ export class ProjectsComponent implements OnInit {
     const search = this.searchText()?.toLowerCase() || '';
     let projects = this._projects();
 
+    const status = this.statusFilter();
+    if (status !== 'all') {
+      projects = projects.filter((project) => project.status === status);
+    }
+
     // Filter by name or created_by
     if (search) {
       projects = projects.filter(
-        p =>
-          p.name.toLowerCase().includes(search) ||
-          (p.created_by && p.created_by.toLowerCase().includes(search)),
+        (p) => p.name.toLowerCase().includes(search) || (p.created_by && p.created_by.toLowerCase().includes(search))
       );
     }
 
@@ -108,12 +109,24 @@ export class ProjectsComponent implements OnInit {
         const valueB = (b as any)[active];
         const valA = isNaN(+valueA) ? valueA : +valueA;
         const valB = isNaN(+valueB) ? valueB : +valueB;
-        return (valA < valB ? -1 : 1) * (direction === 'asc' ? 1 : -1);
+        const comparison = valA === valB ? 0 : valA < valB ? -1 : 1;
+        return comparison * (direction === 'asc' ? 1 : -1);
       });
     }
 
     return projects;
   });
+
+  readonly projectCounts = computed(() => {
+    const projects = this._projects();
+    return {
+      total: projects.length,
+      opened: projects.filter((project) => project.status === 'opened').length,
+      closed: projects.filter((project) => project.status === 'closed').length,
+    };
+  });
+
+  readonly hasActiveFilters = computed(() => !!this.searchText() || this.statusFilter() !== 'all');
 
   // Bridge to mat-table (material table accepts Observable<T[]>)
   private _displayProjects$ = toObservable(this.displayProjects);
@@ -131,7 +144,6 @@ export class ProjectsComponent implements OnInit {
   private bottomSheet = inject(MatBottomSheet);
   private toasterService = inject(ToasterService);
   private recentlyOpenedProjectService = inject(RecentlyOpenedProjectService);
-  private themeService = inject(ThemeService);
 
   ngOnInit() {
     this.controller = this.route.snapshot.data['controller'];
@@ -150,9 +162,7 @@ export class ProjectsComponent implements OnInit {
     this.settings = this.settingsService.getAll();
 
     // Subscribe to external refresh requests
-    this.projectService.projectListSubject
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.refresh());
+    this.projectService.projectListSubject.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.refresh());
 
     // Subscribe to global project notifications for incremental updates
     this.notificationService.projectNotificationEmitter
@@ -182,9 +192,9 @@ export class ProjectsComponent implements OnInit {
 
   // ── WebSocket notification handler ────────────────────────────
   private handleProjectNotification(notification: ProjectNotification): void {
-    this._projects.update(projects => {
+    this._projects.update((projects) => {
       const list = [...projects];
-      const index = list.findIndex(p => p.project_id === notification.event.project_id);
+      const index = list.findIndex((p) => p.project_id === notification.event.project_id);
       switch (notification.action) {
         case 'project.created':
           if (index === -1) list.push(notification.event);
@@ -208,7 +218,7 @@ export class ProjectsComponent implements OnInit {
   }
 
   private setProjectLoading(projectId: string, loading: boolean): void {
-    this._loadingProjects.update(set => {
+    this._loadingProjects.update((set) => {
       const next = new Set(set);
       if (loading) next.add(projectId);
       else next.delete(projectId);
@@ -218,9 +228,8 @@ export class ProjectsComponent implements OnInit {
 
   // ── Selection ─────────────────────────────────────────────────
   isAllSelected() {
-    const numSelected = this.selection.selected.length;
-    const numRows = this._projects().length;
-    return numSelected === numRows;
+    const selectableRows = this.displayProjects().filter((project) => this.canSelectProject(project));
+    return selectableRows.length > 0 && selectableRows.every((project) => this.selection.isSelected(project));
   }
 
   selectAllImages() {
@@ -229,12 +238,32 @@ export class ProjectsComponent implements OnInit {
 
   unChecked() {
     this.selection.clear();
-    this.isAllDelete = false;
   }
 
   allChecked() {
-    this._projects().forEach(row => this.selection.select(row));
-    this.isAllDelete = true;
+    this.displayProjects()
+      .filter((project) => this.canSelectProject(project))
+      .forEach((row) => this.selection.select(row));
+  }
+
+  canSelectProject(project: Project): boolean {
+    return project.status === 'closed';
+  }
+
+  setSearchText(value: string): void {
+    this.searchText.set(value);
+    this.selection.clear();
+  }
+
+  setStatusFilter(value: 'all' | 'opened' | 'closed'): void {
+    this.statusFilter.set(value);
+    this.selection.clear();
+  }
+
+  clearFilters(): void {
+    this.searchText.set('');
+    this.statusFilter.set('all');
+    this.selection.clear();
   }
 
   // ── CRUD operations ───────────────────────────────────────────
@@ -280,6 +309,33 @@ export class ProjectsComponent implements OnInit {
         this.progressService.deactivate();
       },
     });
+  }
+
+  openWorkspace(project: Project): void {
+    if (project.status === 'opened') {
+      this.navigateToWorkspace(project);
+      return;
+    }
+
+    this.setProjectLoading(project.project_id, true);
+    this.projectService.open(this.controller, project.project_id).subscribe({
+      next: (openedProject) => {
+        const projectToOpen = openedProject?.project_id ? openedProject : { ...project, status: 'opened' };
+        this.navigateToWorkspace(projectToOpen);
+      },
+      error: (err) => {
+        const message = err.error?.message || err.message || 'Failed to open project';
+        this.toasterService.error(message);
+        this.setProjectLoading(project.project_id, false);
+      },
+      complete: () => this.setProjectLoading(project.project_id, false),
+    });
+  }
+
+  private navigateToWorkspace(project: Project): void {
+    this.recentlyOpenedProjectService.setcontrollerId(this.controller.id.toString());
+    this.recentlyOpenedProjectService.setProjectId(project.project_id);
+    void this.router.navigate(['/controller', this.controller.id, 'project', project.project_id]);
   }
 
   close(project: Project) {
@@ -425,9 +481,5 @@ export class ProjectsComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe(() => {});
-  }
-
-  isLightThemeEnabled() {
-    return this.themeService.getActualTheme() === 'light';
   }
 }

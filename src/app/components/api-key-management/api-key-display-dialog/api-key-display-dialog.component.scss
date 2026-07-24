@@ -6,7 +6,7 @@
   color: var(--mat-sys-on-surface-variant);
   background: var(--mat-sys-surface-container-high);
   padding: 12px;
-  border-radius: 8px;
+  border-radius: var(--gns3-radius-control);
   margin: 0 0 20px 0;
 
   mat-icon {
@@ -40,7 +40,7 @@
         flex: 1;
         padding: 8px 12px;
         background: var(--mat-sys-surface-container-highest);
-        border-radius: 4px;
+        border-radius: var(--gns3-radius-small);
         font-family: monospace;
         font-size: 13px;
         word-break: break-all;

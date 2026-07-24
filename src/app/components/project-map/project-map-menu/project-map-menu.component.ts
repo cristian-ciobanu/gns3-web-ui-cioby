@@ -89,7 +89,7 @@ export class ProjectMapMenuComponent implements OnInit, OnDestroy {
   public isAIChatOpen: boolean = false;
   public isAIMinimized: boolean = false;
   private projectSubscriptions: Subscription[] = [];
-  private aiChatStateSubscription: Subscription;
+  private aiChatStateSubscription = new Subscription();
 
   ngOnInit() {
     this.themeService.getActualTheme() === 'light'

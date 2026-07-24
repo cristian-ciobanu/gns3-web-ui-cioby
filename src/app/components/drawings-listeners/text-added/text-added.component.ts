@@ -35,7 +35,7 @@ export class TextAddedComponent implements OnInit, OnDestroy {
   readonly controller = input<Controller>(undefined);
   @Input() project: Project;
   @Output() drawingSaved = new EventEmitter<boolean>();
-  private textAdded: Subscription;
+  private textAdded = new Subscription();
 
   private drawingService = inject(DrawingService);
   private drawingsDataSource = inject(DrawingsDataSource);

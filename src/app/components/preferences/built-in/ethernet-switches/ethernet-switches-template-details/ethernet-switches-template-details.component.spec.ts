@@ -247,13 +247,7 @@ describe('EthernetSwitchesTemplateDetailsComponent', () => {
 
       component.goBack();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith([
-        '/controller',
-        mockController.id,
-        'preferences',
-        'builtin',
-        'ethernet-switches',
-      ]);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', mockController.id, 'preferences']);
     });
   });
 

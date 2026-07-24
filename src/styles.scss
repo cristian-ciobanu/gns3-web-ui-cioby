@@ -6,6 +6,7 @@
  */
 
 @use 'styles/dialogs' as *;
+@use 'styles/foundations' as *;
 @use 'styles/map' as *;
 @use 'styles/xterm-context-menu' as *;
 @use 'styles/markdown' as *;
@@ -128,6 +129,8 @@ body {
   height: 100%; // Changed to height to ensure full viewport
   margin: 0;
   padding: 0;
+  background: var(--gns3-page-background);
+  color: var(--mat-sys-on-surface);
 }
 
 /* =============================================
@@ -297,19 +300,6 @@ body .cdk-overlay-container .cdk-overlay-pane .mat-mdc-menu-panel.template-menu 
   stroke: var(--mat-sys-outline);
 }
 
-/* =============================================
-// Marker Traffic Insight — link highlight on match (static, no animation)
-// Color is set inline by MarkerFlashService (user-chosen hex, or none);
-// when no inline color is set, the default theme color below applies.
-// Static highlight (like link :hover) — no keyframes, so many simultaneous
-// matches don't drive continuous repaint. The base .ethernet_link / .serial_link
-// transition still gives a smooth fade in/out when the class is toggled.
-// ============================================= */
-.ethernet_link.marker-pulse,
-.serial_link.marker-pulse {
-  stroke: var(--mat-sys-primary);
-  stroke-width: 5px;
-}
 
 /* =============================================
 // Curviness Anchor (Link Drag Handle)

@@ -14,14 +14,18 @@
 }
 
 .menu-button {
-  margin: 0 4px;
-  transition: transform 100ms ease;
+  margin: 0;
 
   mat-icon {
-    color: var(--mat-sys-on-primary);
+    color: var(--project-bar-icon-color, var(--mat-sys-on-primary));
   }
 }
 
 .menu-button:hover {
-  transform: scale(1.2);
+  background: color-mix(in srgb, var(--mat-sys-on-primary) 12%, transparent);
+}
+
+.menu-button-group {
+  display: flex;
+  align-items: center;
 }

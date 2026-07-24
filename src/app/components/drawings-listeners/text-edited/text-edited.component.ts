@@ -20,7 +20,7 @@ import { ToasterService } from '@services/toaster.service';
 })
 export class TextEditedComponent implements OnInit, OnDestroy {
   readonly controller = input<Controller>(undefined);
-  private textEdited: Subscription;
+  private textEdited = new Subscription();
 
   private drawingService = inject(DrawingService);
   private drawingsDataSource = inject(DrawingsDataSource);

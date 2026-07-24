@@ -121,12 +121,3 @@ button.mat-mdc-icon-button {
     filter: drop-shadow(0 0 8px var(--mat-sys-error));
   }
 }
-
-/* Menu button hover effect */
-.menu-button {
-  transition: transform 100ms ease;
-}
-
-.menu-button:hover {
-  transform: scale(1.3);
-}

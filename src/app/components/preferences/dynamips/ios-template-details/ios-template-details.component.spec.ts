@@ -660,13 +660,7 @@ describe('IosTemplateDetailsComponent', () => {
 
       component.goBack();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith([
-        '/controller',
-        mockController.id,
-        'preferences',
-        'dynamips',
-        'templates',
-      ]);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', mockController.id, 'preferences']);
     });
   });
 

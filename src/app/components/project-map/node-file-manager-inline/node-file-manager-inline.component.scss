@@ -3,7 +3,7 @@
   z-index: 1000;
   background: var(--mat-sys-surface);
   border: 2px solid var(--mat-sys-outline);
-  border-radius: 8px;
+  border-radius: var(--gns3-radius-control);
   box-shadow: 0 8px 24px color-mix(in srgb, var(--mat-sys-shadow) 15%, transparent),
     0 4px 8px color-mix(in srgb, var(--mat-sys-shadow) 10%, transparent);
   // WARNING: Do NOT add contain:layout here. It would make position:fixed

@@ -32,7 +32,7 @@
   color: var(--mat-sys-on-surface-variant);
   border: 1px solid var(--mat-sys-outline);
   padding: 8px 16px;
-  border-radius: 20px;
+  border-radius: var(--gns3-radius-round);
   transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
@@ -46,7 +46,7 @@
   background-color: var(--mat-sys-error);
   color: var(--mat-sys-on-error);
   padding: 8px 16px;
-  border-radius: 20px;
+  border-radius: var(--gns3-radius-round);
   transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 6px color-mix(in srgb, var(--mat-sys-error) 25%, transparent);
 

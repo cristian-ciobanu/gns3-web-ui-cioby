@@ -280,7 +280,7 @@ export class AddIosTemplateComponent implements OnInit, OnDestroy {
   }
 
   goBack() {
-    this.router.navigate(['/controller', this.controller().id, 'preferences', 'dynamips', 'templates']);
+    this.router.navigate(['/controller', this.controller().id, 'preferences']);
   }
 
   onImageChosen() {

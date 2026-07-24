@@ -21,7 +21,6 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  animation: fadeInSlideIn 0.4s ease-out;
 }
 
 .qemu-vm-templates__back-btn {
@@ -64,7 +63,6 @@
   max-width: 800px;
   margin: 0 auto;
   padding: 0 20px 20px;
-  animation: fadeInSlideIn 0.4s ease-out 0.1s both;
 }
 
 /* =============================================
@@ -72,10 +70,10 @@
 // ============================================= */
 .qemu-vm-templates__list {
   background: var(--mat-sys-surface);
-  border-radius: 16px;
+  border-radius: var(--gns3-radius-surface);
   overflow: hidden;
-  box-shadow: 0 8px 32px color-mix(in srgb, var(--mat-sys-shadow) 20%, transparent),
-    0 2px 8px color-mix(in srgb, var(--mat-sys-shadow) 10%, transparent);
+  border: var(--gns3-surface-border);
+  box-shadow: none;
 }
 
 .qemu-vm-templates__list-item {
@@ -111,20 +109,6 @@
 .qemu-vm-templates__menu-btn {
   color: var(--mat-sys-on-surface-variant);
   flex-shrink: 0;
-}
-
-/* =============================================
-// Animations
-// ============================================= */
-@keyframes fadeInSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 /* =============================================

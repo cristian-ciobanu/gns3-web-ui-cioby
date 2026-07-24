@@ -11,7 +11,6 @@ import {
   viewChild,
   signal,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -20,8 +19,8 @@ import { ActivatedRoute, ParamMap, Router, RouterModule } from '@angular/router'
 import { ExportPortableProjectComponent } from '@components/export-portable-project/export-portable-project.component';
 import { environment } from 'environments/environment';
 import * as Mousetrap from 'mousetrap';
-import { forkJoin, from, Observable, Subscription } from 'rxjs';
-import { map, mergeMap } from 'rxjs/operators';
+import { EMPTY, forkJoin, from, Observable, of, Subscription } from 'rxjs';
+import { catchError, finalize, map, mergeMap, switchMap, tap } from 'rxjs/operators';
 import { D3MapComponent } from '../../cartography/components/d3-map/d3-map.component';
 import * as d3 from 'd3';
 import { MapDrawingToDrawingConverter } from '../../cartography/converters/map/map-drawing-to-drawing-converter';
@@ -72,8 +71,6 @@ import { Controller } from '@models/controller';
 import { Symbol } from '@models/symbol';
 import { DrawingService } from '@services/drawing.service';
 import { LinkService } from '@services/link.service';
-import { MarkerFlashService } from '@services/marker-flash.service';
-import { MarkerRegistryService } from '@services/marker-registry.service';
 import { MapScaleService } from '@services/mapScale.service';
 import { MapSettingsService } from '@services/mapsettings.service';
 import { NodeService } from '@services/node.service';
@@ -113,7 +110,6 @@ import { WebWiresharkInlineComponent } from './web-wireshark-inline/web-wireshar
 import { WebConsoleInlineComponent } from './web-console-inline/web-console-inline.component';
 import { NodeFileManagerInlineComponent } from './node-file-manager-inline/node-file-manager-inline.component';
 import { DrawLinkToolComponent } from './draw-link-tool/draw-link-tool.component';
-import { ImportApplianceComponent } from './import-appliance/import-appliance.component';
 import { NodesMenuComponent } from './nodes-menu/nodes-menu.component';
 import { ProgressComponent } from '../../common/progress/progress.component';
 import { TemplateComponent } from '../template/template.component';
@@ -125,8 +121,6 @@ import { LinkCreatedComponent } from '../drawings-listeners/link-created/link-cr
 import { NodeDraggedComponent } from '../drawings-listeners/node-dragged/node-dragged.component';
 import { NodeLabelDraggedComponent } from '../drawings-listeners/node-label-dragged/node-label-dragged.component';
 import { TextAddedComponent } from '../drawings-listeners/text-added/text-added.component';
-import { MarkerLegendComponent } from './marker-legend/marker-legend.component';
-import { MarkerManagerComponent } from './marker-manager/marker-manager.component';
 import { TextEditedComponent } from '../drawings-listeners/text-edited/text-edited.component';
 
 @Component({
@@ -136,7 +130,6 @@ import { TextEditedComponent } from '../drawings-listeners/text-edited/text-edit
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
-    FormsModule,
     MatButtonModule,
     MatCheckboxModule,
     MatIconModule,
@@ -150,7 +143,6 @@ import { TextEditedComponent } from '../drawings-listeners/text-edited/text-edit
     NodesMenuComponent,
     SnapshotMenuItemComponent,
     TemplateComponent,
-    ImportApplianceComponent,
     ConsoleWrapperComponent,
     AiChatComponent,
     WebWiresharkInlineComponent,
@@ -165,8 +157,6 @@ import { TextEditedComponent } from '../drawings-listeners/text-edited/text-edit
     NodeLabelDraggedComponent,
     TextAddedComponent,
     TextEditedComponent,
-    MarkerLegendComponent,
-    MarkerManagerComponent,
   ],
 })
 export class ProjectMapComponent implements OnInit, OnDestroy {
@@ -178,7 +168,6 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
   public controller: Controller = {} as Controller;
   public projectws: WebSocket;
   public ws: WebSocket;
-  public isProjectMapMenuVisible: boolean = false;
   public isConsoleVisible: boolean = true;
   public isTopologySummaryVisible: boolean = true;
   public isInterfaceLabelVisible: boolean = false;
@@ -189,7 +178,7 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
   public toolbarVisibility: boolean = true;
   public symbolScaling: boolean = true;
   public isAIChatVisible: boolean = false;
-  public isMarkerManagerVisible: boolean = false;
+  public inspectorOpen = true;
 
   // Track multiple Web Wireshark inline windows
   // Key is link_id, value is the Link object
@@ -212,7 +201,6 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
   // Z-index for console and AI chat windows
   public consoleZIndex: number = this.baseZIndex;
   public aiChatZIndex: number = this.baseZIndex;
-  public markerManagerZIndex: number = this.baseZIndex;
 
   // Taskbar icon positioning
   private readonly TASKBAR_BASE_LEFT = 20;
@@ -240,7 +228,7 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
     };
   });
   private instance: ComponentRef<TopologySummaryComponent>;
-  // private instance: any
+  private topologySummaryLoadId = 0;
 
   tools = {
     selection: true,
@@ -258,7 +246,18 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
   readonly templateComponent = viewChild(TemplateComponent);
 
   private projectMapSubscription: Subscription = new Subscription();
+  private projectScopeSubscription: Subscription = new Subscription();
   private startedNodeIds = new Set<string>();
+  private readonly keyboardBindings = [
+    'ctrl++',
+    'ctrl+-',
+    'ctrl+0',
+    'ctrl+a',
+    'ctrl+h',
+    'ctrl+shift+a',
+    'ctrl+shift+s',
+    'del',
+  ];
 
   private route = inject(ActivatedRoute);
   private controllerService = inject(ControllerService);
@@ -295,8 +294,6 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private mapNodesDataSource = inject(MapNodesDataSource);
   private mapLinksDataSource = inject(MapLinksDataSource);
-  private markerRegistryService = inject(MarkerRegistryService);
-  private markerFlashService = inject(MarkerFlashService);
   private mapDrawingsDataSource = inject(MapDrawingsDataSource);
   private mapSymbolsDataSource = inject(MapSymbolsDataSource);
   private mapSettingsService = inject(MapSettingsService);
@@ -311,13 +308,6 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
   private cd = inject(ChangeDetectorRef);
   private aiChatStore = inject(AiChatStore);
   public windowManagement = inject(WindowManagementService);
-  private viewContainerRef = inject(ViewContainerRef);
-  // private cfr: ComponentFactoryResolver,
-  // private injector: Injector,
-
-  // constructor(private viewContainerRef: ViewContainerRef) {}
-  // createMyComponent() {this.viewContainerRef.createComponent(MyComponent);}
-
   ngOnInit() {
     this.getSettings();
     this.progressService.activate();
@@ -348,24 +338,34 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
   }
 
   async lazyLoadTopologySummary() {
+    const loadId = ++this.topologySummaryLoadId;
     if (this.isTopologySummaryVisible) {
+      if (this.instance) {
+        return;
+      }
+      const projectId = this.project?.project_id;
       // In zoneless mode, we need to explicitly notify Angular after async operations
       const { TopologySummaryComponent } = await import('../topology-summary/topology-summary.component');
+      if (
+        loadId !== this.topologySummaryLoadId ||
+        !this.isTopologySummaryVisible ||
+        !projectId ||
+        projectId !== this.project?.project_id ||
+        this.instance
+      ) {
+        return;
+      }
       this.instance = this.topologySummaryContainer().createComponent(TopologySummaryComponent);
 
-      // const componentFactory = this.cfr.resolveComponentFactory(TopologySummaryComponent);
-      // this.instance = this.topologySummaryContainer().createComponent(componentFactory, null, this.injector);
       this.instance.instance.controller = this.controller;
       this.instance.instance.project = this.project;
+      this.instance.instance.embedded = true;
       // In zoneless mode, createComponent doesn't automatically trigger change detection
       // We need to explicitly detect changes to ensure the component is rendered
       this.instance.changeDetectorRef.detectChanges();
     } else if (this.instance) {
-      if (this.instance.instance) {
-        this.instance.instance.ngOnDestroy();
-        this.instance.destroy();
-        this.instance = null;
-      }
+      this.instance.destroy();
+      this.instance = null;
     }
   }
 
@@ -495,7 +495,10 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
         // Only open console on the transition from non-started to started
         if (wasStarted || node.status !== 'started' || !node.console_auto_start || node.console_type === 'none') return;
         if (node.console_type === 'vnc') {
-          setTimeout(() => this.onOpenWebConsoleInline({ node, controller: this.controller, project: this.project }), 500);
+          setTimeout(
+            () => this.onOpenWebConsoleInline({ node, controller: this.controller, project: this.project }),
+            500
+          );
         } else {
           this.mapSettingsService.logConsoleSubject.next(true);
           setTimeout(() => this.nodeConsoleService.openConsoleForNode(node), 500);
@@ -515,96 +518,111 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
   }
 
   getData() {
-    const routeSub = this.route.paramMap.subscribe((paramMap: ParamMap) => {
-      const controller_id = parseInt(paramMap.get('controller_id'), 10);
-      const project_id = paramMap.get('project_id');
+    const routeSub = this.route.paramMap
+      .pipe(
+        switchMap((paramMap: ParamMap) => {
+          const controllerId = parseInt(paramMap.get('controller_id'), 10);
+          const projectId = paramMap.get('project_id');
+          this.resetProjectScope();
+          this.progressService.activate();
 
-      if (!project_id) {
-        this.router.navigate(['/controllers']);
-        return;
-      }
-
-      from(this.controllerService.get(controller_id))
-        .pipe(
-          mergeMap((controller: Controller) => {
-            if (!controller) this.router.navigate(['/controllers']);
-            this.controller = controller;
-            this.cd.markForCheck();
-            return this.projectService.get(controller, project_id).pipe(
-              map((project) => {
-                return project;
-              })
-            );
-          }),
-          mergeMap((project: Project) => {
-            this.project = project;
-            this.cd.markForCheck();
-            if (!project || !project.project_id) {
-              this.router.navigate(['/controllers']);
-              return new Observable<Project>((observer) => observer.complete());
-            }
-
-            this.projectService.open(this.controller, this.project.project_id);
-            this.title.setTitle(this.project.name);
-
-            // Initialize visibility settings from project or fallback to localStorage/defaults
-            this.isInterfaceLabelVisible = this.project.show_interface_labels ??
-                                           this.mapSettingsService.showInterfaceLabels ??
-                                           true;
-            this.layersVisibility = this.project.show_layers ??
-                                   localStorage.getItem('layersVisibility') === 'true';
-            this.gridVisibility = this.project.show_grid ??
-                                  localStorage.getItem('gridVisibility') === 'true';
-
-            this.toggleShowTopologySummary(this.mapSettingsService.isTopologySummaryVisible);
-            const lockKey = `itemLockStatusVisibility_${this.project.project_id}`;
-            this.itemLockStatusVisibility = localStorage.getItem(lockKey) === 'true';
-            this.mapSettingsService.toggleItemLockStatus(this.itemLockStatusVisibility);
-
-            this.recentlyOpenedProjectService.setcontrollerId(this.controller.id.toString());
-
-            if (this.project.status === 'opened') {
-              return new Observable<Project>((observer) => {
-                observer.next(this.project);
-              });
-            } else {
-              return this.projectService.open(this.controller, this.project.project_id);
-            }
-          })
-        )
-        .subscribe(
-          (project: Project) => {
-            if (project && project.project_id) {
-              this.onProjectLoad(project);
-            }
-            this.cd.markForCheck();
-            if (this.mapSettingsService.openReadme) this.showReadme();
-          },
-          // Note: Not using error-handler skill pattern because:
-          // 1. The error is wrapped by ControllerErrorHandler, so message is at error.message (not err.error?.message)
-          // 2. For 404 errors, we redirect to projects page with error message via queryParams since toast won't persist
-          (error) => {
-            this.progressService.setError(error);
-            const message = error?.message || error?.originalError?.message || 'Failed to load project';
-            // Redirect to projects page if project not found (404)
-            const status = error?.originalError?.status;
-            if (status === 404) {
-              this.router.navigate(['/controller', controller_id, 'projects'], {
-                queryParams: { error: message },
-              });
-            } else {
-              this.toasterService.error(message);
-            }
-            this.cd.markForCheck();
-          },
-          () => {
-            this.progressService.deactivate();
-            this.cd.markForCheck();
+          if (!projectId || Number.isNaN(controllerId)) {
+            void this.router.navigate(['/controllers']);
+            return EMPTY;
           }
-        );
-    });
+
+          return from(this.controllerService.get(controllerId)).pipe(
+            switchMap((controller: Controller) => {
+              if (!controller) {
+                void this.router.navigate(['/controllers']);
+                return EMPTY;
+              }
+              this.controller = controller;
+              this.cd.markForCheck();
+              return this.projectService.get(controller, projectId);
+            }),
+            switchMap((project: Project) => {
+              if (!project?.project_id) {
+                void this.router.navigate(['/controllers']);
+                return EMPTY;
+              }
+
+              this.project = project;
+              this.title.setTitle(project.name);
+              this.isInterfaceLabelVisible =
+                project.show_interface_labels ?? this.mapSettingsService.showInterfaceLabels ?? true;
+              this.layersVisibility = project.show_layers ?? localStorage.getItem('layersVisibility') === 'true';
+              this.gridVisibility = project.show_grid ?? localStorage.getItem('gridVisibility') === 'true';
+
+              this.toggleShowTopologySummary(this.mapSettingsService.isTopologySummaryVisible);
+              const lockKey = `itemLockStatusVisibility_${project.project_id}`;
+              this.itemLockStatusVisibility = localStorage.getItem(lockKey) === 'true';
+              this.mapSettingsService.toggleItemLockStatus(this.itemLockStatusVisibility);
+              this.recentlyOpenedProjectService.setcontrollerId(this.controller.id.toString());
+              this.cd.markForCheck();
+
+              return project.status === 'opened'
+                ? of(project)
+                : this.projectService.open(this.controller, project.project_id);
+            }),
+            tap((project: Project) => {
+              if (project?.project_id) {
+                this.project = project;
+                this.onProjectLoad(project);
+              }
+              this.cd.markForCheck();
+              if (this.mapSettingsService.openReadme) this.showReadme();
+            }),
+            catchError((error) => {
+              this.progressService.setError(error);
+              const message = error?.message || error?.originalError?.message || 'Failed to load project';
+              const status = error?.originalError?.status;
+              if (status === 404) {
+                void this.router.navigate(['/controller', controllerId, 'projects'], {
+                  queryParams: { error: message },
+                });
+              } else {
+                this.toasterService.error(message);
+              }
+              this.cd.markForCheck();
+              return EMPTY;
+            }),
+            finalize(() => {
+              this.progressService.deactivate();
+              this.cd.markForCheck();
+            })
+          );
+        })
+      )
+      .subscribe();
 
     this.projectMapSubscription.add(routeSub);
+  }
+
+  private resetProjectScope(): void {
+    this.projectScopeSubscription.unsubscribe();
+    this.projectScopeSubscription = new Subscription();
+    this.closeProjectConnections();
+    this.topologySummaryLoadId++;
+    if (this.instance) {
+      this.instance.destroy();
+      this.instance = null;
+    }
+    this.drawingsDataSource.clear();
+    this.nodesDataSource.clear();
+    this.linksDataSource.clear();
+    this.startedNodeIds.clear();
+  }
+
+  private closeProjectConnections(): void {
+    if (this.projectws && this.projectws.readyState < 2) {
+      this.projectws.close();
+    }
+    if (this.ws && this.ws.readyState < 2) {
+      this.ws.close();
+    }
+    this.projectws = undefined;
+    this.ws = undefined;
   }
 
   addKeyboardListeners() {
@@ -635,6 +653,7 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
     Mousetrap.bind('ctrl+h', (event: Event) => {
       event.preventDefault();
       this.toolbarVisibility = !this.toolbarVisibility;
+      this.cd.markForCheck();
     });
 
     Mousetrap.bind('ctrl+shift+a', (event: Event) => {
@@ -652,6 +671,19 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
       // Note: In zoneless mode, explicit change detection is required
       this.deleteItems();
     });
+  }
+
+  public toggleInspector(): void {
+    this.inspectorOpen = !this.inspectorOpen;
+    this.cd.markForCheck();
+  }
+
+  public takeTopologyScreenshot(): void {
+    this.projectMapMenuComponent().takeScreenshot();
+  }
+
+  public openFaultInjection(): void {
+    this.projectMapMenuComponent().openFaultInjection();
   }
 
   deleteItems() {
@@ -728,7 +760,6 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
         }),
         mergeMap((links: Link[]) => {
           this.linksDataSource.set(links);
-          this.markerRegistryService.rebuildAll(links);
           return this.projectService.drawings(this.controller, project.project_id);
         })
       )
@@ -742,12 +773,14 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
           this.progressService.deactivate();
         },
         error: (err) => {
-          this.toasterService.error('Failed to load project data: ' + (err.error?.message || err.message || 'Unknown error'));
+          this.toasterService.error(
+            'Failed to load project data: ' + (err.error?.message || err.message || 'Unknown error')
+          );
           this.progressService.deactivate();
           this.cd.markForCheck();
         },
       });
-    this.projectMapSubscription.add(subscription);
+    this.projectScopeSubscription.add(subscription);
   }
 
   setUpProjectWS(project: Project) {
@@ -817,7 +850,10 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
     const onNodeContextMenu = this.nodeWidget.onContextMenu.subscribe((eventNode: NodeContextMenu) => {
       const selectedItems = this.selectionManager.getSelected();
 
-      if (this.selectionManager.isSelected(eventNode.node) && this.openMenuForSelection(selectedItems, eventNode.event)) {
+      if (
+        this.selectionManager.isSelected(eventNode.node) &&
+        this.openMenuForSelection(selectedItems, eventNode.event)
+      ) {
         return;
       }
 
@@ -864,14 +900,14 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
       this.openMenuForSelection(selectedItems, event);
     });
 
-    this.projectMapSubscription.add(onLinkContextMenu);
-    this.projectMapSubscription.add(onEthernetLinkContextMenu);
-    this.projectMapSubscription.add(onSerialLinkContextMenu);
-    this.projectMapSubscription.add(onNodeContextMenu);
-    this.projectMapSubscription.add(onDrawingContextMenu);
-    this.projectMapSubscription.add(onContextMenu);
-    this.projectMapSubscription.add(onLabelContextMenu);
-    this.projectMapSubscription.add(onInterfaceLabelContextMenu);
+    this.projectScopeSubscription.add(onLinkContextMenu);
+    this.projectScopeSubscription.add(onEthernetLinkContextMenu);
+    this.projectScopeSubscription.add(onSerialLinkContextMenu);
+    this.projectScopeSubscription.add(onNodeContextMenu);
+    this.projectScopeSubscription.add(onDrawingContextMenu);
+    this.projectScopeSubscription.add(onContextMenu);
+    this.projectScopeSubscription.add(onLabelContextMenu);
+    this.projectScopeSubscription.add(onInterfaceLabelContextMenu);
     this.mapChangeDetectorRef.detectChanges();
   }
 
@@ -956,7 +992,9 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
               }
             },
             error: (err) => {
-              this.toasterService.error('Failed to load nodes: ' + (err.error?.message || err.message || 'Unknown error'));
+              this.toasterService.error(
+                'Failed to load nodes: ' + (err.error?.message || err.message || 'Unknown error')
+              );
               this.cd.markForCheck();
             },
           });
@@ -1021,18 +1059,37 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
   }
 
   public toggleMovingMode() {
-    this.tools.moving = !this.tools.moving;
-    this.movingEventSource.movingModeState.emit(this.tools.moving);
+    this.tools.moving ? this.activateSelectionMode() : this.activatePanMode();
+  }
 
-    if (!this.readonly) {
-      this.tools.selection = !this.tools.moving;
-      this.toolsService.selectionToolActivation(this.tools.selection);
-    }
+  public activateSelectionMode(): void {
+    this.tools.moving = false;
+    this.tools.draw_link = false;
+    this.tools.selection = !this.readonly;
+    this.movingEventSource.movingModeState.emit(false);
+    this.toolsService.drawLinkToolActivation(false);
+    this.toolsService.selectionToolActivation(this.tools.selection);
+  }
+
+  public activatePanMode(): void {
+    this.tools.moving = true;
+    this.tools.draw_link = false;
+    this.tools.selection = false;
+    this.movingEventSource.movingModeState.emit(true);
+    this.toolsService.drawLinkToolActivation(false);
+    this.toolsService.selectionToolActivation(false);
   }
 
   public toggleDrawLineMode() {
-    this.tools.draw_link = !this.tools.draw_link;
-    this.toolsService.drawLinkToolActivation(this.tools.draw_link);
+    if (this.readonly) return;
+
+    const linkModeEnabled = !this.tools.draw_link;
+    this.tools.draw_link = linkModeEnabled;
+    this.tools.moving = false;
+    this.tools.selection = !linkModeEnabled;
+    this.movingEventSource.movingModeState.emit(false);
+    this.toolsService.selectionToolActivation(this.tools.selection);
+    this.toolsService.drawLinkToolActivation(linkModeEnabled);
   }
 
   public toggleShowInterfaceLabels(enabled: boolean) {
@@ -1242,71 +1299,6 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Toggle the singleton Marker Manager floating window.
-   * If it is open but minimized, restore it instead of closing.
-   */
-  public toggleMarkerManager() {
-    if (this.isMarkerManagerVisible && this.windowManagement.isMinimized('marker-manager')) {
-      this.windowManagement.restoreWindow('marker-manager');
-      this.bringMarkerManagerToFront();
-      return;
-    }
-    if (this.isMarkerManagerVisible) {
-      this.closeMarkerManager();
-      return;
-    }
-    this.isMarkerManagerVisible = true;
-    this.zIndexCounter++;
-    this.markerManagerZIndex = this.baseZIndex + this.zIndexCounter;
-    this.cd.markForCheck();
-  }
-
-  /**
-   * Close the Marker Manager window and clear its minimize state.
-   */
-  public closeMarkerManager() {
-    this.isMarkerManagerVisible = false;
-    this.windowManagement.restoreWindow('marker-manager');
-    this.cd.markForCheck();
-  }
-
-  /**
-   * Bring the Marker Manager window to front.
-   */
-  public bringMarkerManagerToFront() {
-    this.zIndexCounter++;
-    this.markerManagerZIndex = this.baseZIndex + this.zIndexCounter;
-    this.cd.markForCheck();
-  }
-
-  /**
-   * Taskbar left position for the Marker Manager icon (after console / wireshark /
-   * web-console / file-manager icons).
-   */
-  public getMarkerManagerTaskbarLeft(): number {
-    const offset = this.TASKBAR_ICON_WIDTH + this.TASKBAR_ICON_GAP;
-    let base = this.TASKBAR_BASE_LEFT;
-    if (this.isConsoleVisible) base += offset;
-    base += this.webWiresharkInlineWindows.size * offset;
-    base += this.webConsoleInlineWindows.size * offset;
-    base += this.fileManagerInlineWindows.size * offset;
-    return base;
-  }
-
-  /**
-   * Minimize / restore the Marker Manager window via the taskbar icon.
-   */
-  public toggleMarkerManagerMinimize() {
-    const id = 'marker-manager';
-    if (this.windowManagement.minimizedWindows().some((w) => w.id === id)) {
-      this.windowManagement.restoreWindow(id);
-    } else {
-      this.windowManagement.minimizeWindow(id, 'marker');
-    }
-    this.cd.markForCheck();
-  }
-
-  /**
    * Restore console window from minimized state
    */
   public restoreConsole(): void {
@@ -1338,7 +1330,7 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
 
     // Calculate index based on position in open windows list
     const openWindows = this.getWebWiresharkInlineWindows();
-    const index = openWindows.findIndex(w => w.link_id === linkId);
+    const index = openWindows.findIndex((w) => w.link_id === linkId);
 
     // Console icon always takes first slot
     let baseOffset = this.TASKBAR_ICON_WIDTH + this.TASKBAR_ICON_GAP;
@@ -1367,7 +1359,7 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
 
     // Calculate index based on position in open windows list
     const openWindows = this.getWebConsoleInlineWindows();
-    const index = openWindows.findIndex(w => w.node_id === nodeId);
+    const index = openWindows.findIndex((w) => w.node_id === nodeId);
 
     // Console icon always takes first slot
     let baseOffset = this.TASKBAR_ICON_WIDTH + this.TASKBAR_ICON_GAP;
@@ -1384,7 +1376,7 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
    */
   public toggleWebConsoleMinimize(nodeId: string): void {
     const windowId = `console-${nodeId}`;
-    const isMinimized = this.windowManagement.minimizedWindows().some(w => w.id === windowId);
+    const isMinimized = this.windowManagement.minimizedWindows().some((w) => w.id === windowId);
     if (isMinimized) {
       this.windowManagement.restoreWindow(windowId);
     } else {
@@ -1397,7 +1389,7 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
    * Toggle console minimize/restore
    */
   public toggleConsoleMinimize(): void {
-    const isMinimized = this.windowManagement.minimizedWindows().some(w => w.id === 'console');
+    const isMinimized = this.windowManagement.minimizedWindows().some((w) => w.id === 'console');
     if (isMinimized) {
       this.windowManagement.restoreWindow('console');
     } else {
@@ -1411,7 +1403,7 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
    */
   public toggleWiresharkMinimize(linkId: string): void {
     const windowId = `wireshark-${linkId}`;
-    const isMinimized = this.windowManagement.minimizedWindows().some(w => w.id === windowId);
+    const isMinimized = this.windowManagement.minimizedWindows().some((w) => w.id === windowId);
     if (isMinimized) {
       this.windowManagement.restoreWindow(windowId);
     } else {
@@ -1533,15 +1525,6 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
     }
   }
 
-  public hideMenu() {
-    this.projectMapMenuComponent().resetDrawToolChoice();
-    this.isProjectMapMenuVisible = false;
-  }
-
-  public showMenu() {
-    this.isProjectMapMenuVisible = true;
-  }
-
   zoomIn() {
     this.mapScaleService.setScale(this.mapScaleService.getScale() + 0.1);
   }
@@ -1560,7 +1543,7 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
 
   addNewProject() {
     const dialogRef = this.dialog.open(AddBlankProjectDialogComponent, {
-      width: '400px',
+      panelClass: ['base-dialog-panel', 'dialog-pattern-small'],
       autoFocus: false,
       disableClose: true,
     });
@@ -1570,7 +1553,7 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
 
   saveProject() {
     const dialogRef = this.dialog.open(SaveProjectDialogComponent, {
-      width: '400px',
+      panelClass: ['base-dialog-panel', 'dialog-pattern-small'],
       autoFocus: false,
       disableClose: true,
     });
@@ -1600,7 +1583,7 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
   importProject() {
     let uuid: string = '';
     const dialogRef = this.dialog.open(ImportProjectDialogComponent, {
-      width: '400px',
+      panelClass: ['base-dialog-panel', 'dialog-pattern-small'],
       autoFocus: false,
       disableClose: true,
     });
@@ -1740,11 +1723,14 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
 
   public addNewTemplate() {
     const dialogRef = this.dialog.open(NewTemplateDialogComponent, {
-      width: '800px',
-      maxHeight: '800px',
       autoFocus: false,
       disableClose: true,
-      panelClass: ['base-dialog-panel', 'configurator-dialog-panel', 'new-template-dialog-panel'],
+      panelClass: [
+        'base-dialog-panel',
+        'dialog-pattern-large',
+        'configurator-dialog-panel',
+        'new-template-dialog-panel',
+      ],
     });
     let instance = dialogRef.componentInstance;
     instance.controller = this.controller;
@@ -1753,8 +1739,7 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
 
   public showReadme() {
     const dialogRef = this.dialog.open(ProjectReadmeComponent, {
-      width: '600px',
-      height: '650px',
+      panelClass: ['base-dialog-panel', 'dialog-pattern-standard'],
       autoFocus: false,
       disableClose: true,
     });
@@ -1770,18 +1755,10 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
     this.nodeConsoleService.openConsoles = 0;
     this.title.setTitle('GNS3 Web UI');
 
-    this.drawingsDataSource.clear();
-    this.nodesDataSource.clear();
-    this.linksDataSource.clear();
-
-    if (this.projectws) {
-      if (this.projectws.OPEN) this.projectws.close();
-    }
-    if (this.ws) {
-      if (this.ws.OPEN) this.ws.close();
-    }
+    this.resetProjectScope();
     this.projectMapSubscription.unsubscribe();
     this.startedNodeIds.clear();
+    this.keyboardBindings.forEach((binding) => Mousetrap.unbind(binding));
   }
 
   /**
@@ -1820,12 +1797,12 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
   }
 
   public isFileManagerMinimized(nodeId: string): boolean {
-    return this.windowManagement.minimizedWindows().some(w => w.id === 'filemgr-' + nodeId);
+    return this.windowManagement.minimizedWindows().some((w) => w.id === 'filemgr-' + nodeId);
   }
 
   public toggleFileManagerMinimize(nodeId: string) {
     const id = `filemgr-${nodeId}`;
-    if (this.windowManagement.minimizedWindows().some(w => w.id === id)) {
+    if (this.windowManagement.minimizedWindows().some((w) => w.id === id)) {
       this.windowManagement.restoreWindow(id);
     } else {
       this.windowManagement.minimizeWindow(id, 'filemgr');

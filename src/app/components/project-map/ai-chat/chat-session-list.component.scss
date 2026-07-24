@@ -48,7 +48,7 @@
   align-items: center;
   gap: 4px;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: var(--gns3-radius-control);
   cursor: pointer;
   transition: background-color 0.2s;
   position: relative;

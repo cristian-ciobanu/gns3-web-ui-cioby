@@ -24,21 +24,14 @@
   height: 48px;
   border-radius: 12px;
   background: var(--mat-sys-surface);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--mat-sys-shadow) 15%, transparent);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: var(--gns3-surface-border);
+  box-shadow: none;
+  transition: background-color var(--gns3-motion-duration-fast) var(--gns3-motion-easing-standard);
   text-decoration: none;
   z-index: 100;
-  animation: fadeIn 0.3s ease-out;
 
   &:hover {
     background: var(--mat-sys-surface-container);
-    box-shadow: 0 6px 16px color-mix(in srgb, var(--mat-sys-shadow) 20%, transparent);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px color-mix(in srgb, var(--mat-sys-shadow) 10%, transparent);
   }
 }
 
@@ -63,7 +56,7 @@
   align-items: center;
   min-height: 100vh;
   padding: 20px;
-  background: linear-gradient(135deg, var(--mat-sys-primary-container) 0%, var(--mat-sys-background) 100%);
+  background: var(--gns3-page-background);
 }
 
 /* =============================================
@@ -72,21 +65,14 @@
 .login-card {
   width: 100%;
   max-width: 480px;
-  animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .login-card__mat-card {
   padding: 32px;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px color-mix(in srgb, var(--mat-sys-shadow) 20%, transparent),
-    0 2px 8px color-mix(in srgb, var(--mat-sys-shadow) 10%, transparent);
+  border-radius: var(--gns3-radius-surface);
+  border: var(--gns3-surface-border);
+  box-shadow: none;
   background: var(--mat-sys-surface);
-  transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &:hover {
-    box-shadow: 0 12px 40px color-mix(in srgb, var(--mat-sys-shadow) 25%, transparent),
-      0 4px 12px color-mix(in srgb, var(--mat-sys-shadow) 12%, transparent);
-  }
 }
 
 /* =============================================
@@ -147,7 +133,6 @@
   border-radius: 12px;
   background: color-mix(in srgb, var(--mat-sys-primary) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--mat-sys-primary) 20%, transparent);
-  animation: fadeIn 0.3s ease-in;
 }
 
 .login-card__controller-icon {
@@ -206,15 +191,10 @@
   height: 20px;
   cursor: pointer;
   color: var(--mat-sys-on-surface-variant);
-  transition: color 0.2s ease, transform 0.2s ease;
+  transition: color var(--gns3-motion-duration-fast) var(--gns3-motion-easing-standard);
 
   &:hover {
     color: var(--mat-sys-primary);
-    transform: scale(1.1);
-  }
-
-  &:active {
-    transform: scale(0.95);
   }
 }
 
@@ -227,7 +207,7 @@
   gap: 8px;
   padding: 8px 12px;
   margin-top: -8px;
-  border-radius: 8px;
+  border-radius: var(--gns3-radius-control);
   background: color-mix(in srgb, var(--mat-sys-error) 10%, transparent);
   color: var(--mat-sys-error);
   font-size: 13px;
@@ -268,12 +248,7 @@
   position: relative;
 
   &:hover:not([disabled]) {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px color-mix(in srgb, var(--mat-sys-primary) 30%, transparent);
-  }
-
-  &:active:not([disabled]) {
-    transform: translateY(0);
+    box-shadow: none;
   }
 
   &[disabled] {
@@ -290,26 +265,6 @@
 /* =============================================
 // Animations
 // ============================================= */
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 @keyframes shake {
   0%,
   100% {

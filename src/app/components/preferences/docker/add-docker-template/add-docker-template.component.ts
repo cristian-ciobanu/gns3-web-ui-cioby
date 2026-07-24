@@ -126,7 +126,7 @@ export class AddDockerTemplateComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/controller', this.controller.id, 'preferences', 'docker', 'templates']);
+    this.router.navigate(['/controller', this.controller.id, 'preferences']);
   }
 
   addTemplate() {

@@ -295,13 +295,7 @@ describe('QemuVmTemplateDetailsComponent', () => {
 
   it('should navigate back when goBack is called', () => {
     fixture.componentInstance.goBack();
-    expect(mockRouter.navigate).toHaveBeenCalledWith([
-      '/controller',
-      mockController.id,
-      'preferences',
-      'qemu',
-      'templates',
-    ]);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', mockController.id, 'preferences']);
   });
 
   it('should show error when saving with missing template name', () => {

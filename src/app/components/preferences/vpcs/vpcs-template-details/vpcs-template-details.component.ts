@@ -122,7 +122,7 @@ export class VpcsTemplateDetailsComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/controller', this.controller.id, 'preferences', 'vpcs', 'templates']);
+    this.router.navigate(['/controller', this.controller.id, 'preferences']);
   }
 
   onSave() {

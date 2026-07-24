@@ -240,13 +240,7 @@ describe('VpcsTemplateDetailsComponent', () => {
 
       component.goBack();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith([
-        '/controller',
-        mockController.id,
-        'preferences',
-        'vpcs',
-        'templates',
-      ]);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', mockController.id, 'preferences']);
     });
   });
 

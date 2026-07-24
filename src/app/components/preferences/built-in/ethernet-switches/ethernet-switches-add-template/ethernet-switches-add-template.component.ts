@@ -81,7 +81,7 @@ export class EthernetSwitchesAddTemplateComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/controller', this.controller.id, 'preferences', 'builtin', 'ethernet-switches']);
+    this.router.navigate(['/controller', this.controller.id, 'preferences']);
   }
 
   addTemplate() {

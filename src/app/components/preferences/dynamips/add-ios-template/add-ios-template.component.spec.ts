@@ -787,13 +787,7 @@ describe('AddIosTemplateComponent', () => {
 
       component.addTemplate();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith([
-        '/controller',
-        mockController.id,
-        'preferences',
-        'dynamips',
-        'templates',
-      ]);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', mockController.id, 'preferences']);
     });
   });
 
@@ -804,13 +798,7 @@ describe('AddIosTemplateComponent', () => {
 
       component.goBack();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith([
-        '/controller',
-        mockController.id,
-        'preferences',
-        'dynamips',
-        'templates',
-      ]);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', mockController.id, 'preferences']);
     });
   });
 

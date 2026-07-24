@@ -15,18 +15,20 @@
   </div>
 </header>
 
-<form class="group-management__search-form">
-  <mat-form-field class="group-management__search">
-    <input
-      matInput
-      placeholder="Search group by name"
-      [value]="searchText()"
-      (input)="searchText.set($event.target.value)"
-    />
-  </mat-form-field>
-</form>
-
 <div class="group-management__table-container">
+  <form class="group-management__search-form">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="group-management__search">
+      <input
+        matInput
+        type="search"
+        aria-label="Search groups"
+        placeholder="Search group by name"
+        [value]="searchText()"
+        (input)="searchText.set($event.target.value)"
+      />
+    </mat-form-field>
+  </form>
+
   <table mat-table [dataSource]="dataSource | groupFilter : searchText()" matSort #groupsSort="matSort">
     <ng-container matColumnDef="select">
       <th mat-header-cell *matHeaderCellDef class="group-management__small-col">

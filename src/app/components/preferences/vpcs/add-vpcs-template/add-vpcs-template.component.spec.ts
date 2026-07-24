@@ -183,13 +183,7 @@ describe('AddVpcsTemplateComponent', () => {
 
       component.goBack();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith([
-        '/controller',
-        mockController.id,
-        'preferences',
-        'vpcs',
-        'templates',
-      ]);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', mockController.id, 'preferences']);
     });
 
     it('should navigate correctly even when controller id is 0', () => {
@@ -198,7 +192,7 @@ describe('AddVpcsTemplateComponent', () => {
 
       component.goBack();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', 0, 'preferences', 'vpcs', 'templates']);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', 0, 'preferences']);
     });
   });
 
@@ -255,13 +249,7 @@ describe('AddVpcsTemplateComponent', () => {
       component.addTemplate();
       await fixture.whenStable();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith([
-        '/controller',
-        mockController.id,
-        'preferences',
-        'vpcs',
-        'templates',
-      ]);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', mockController.id, 'preferences']);
     });
 
     it('should call templateMocksService.getVpcsTemplate to get base template', async () => {

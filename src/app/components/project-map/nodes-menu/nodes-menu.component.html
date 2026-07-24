@@ -1,19 +1,11 @@
 <div class="menu-button-group">
   <button
-    matTooltip="Console connect to all nodes"
-    matTooltipClass="custom-tooltip"
-    mat-icon-button
-    (click)="startConsoleForAllNodes()"
-    class="menu-button"
-  >
-    <mat-icon>web_asset</mat-icon>
-  </button>
-  <button
     matTooltip="Start/Resume all nodes"
     matTooltipClass="custom-tooltip"
     mat-icon-button
     (click)="confirmControlsActions('start')"
     class="menu-button"
+    aria-label="Start or resume all nodes"
   >
     <mat-icon>play_arrow</mat-icon>
   </button>
@@ -23,6 +15,7 @@
     mat-icon-button
     (click)="confirmControlsActions('suspend')"
     class="menu-button"
+    aria-label="Suspend all nodes"
   >
     <mat-icon>pause</mat-icon>
   </button>
@@ -32,6 +25,7 @@
     mat-icon-button
     (click)="confirmControlsActions('stop')"
     class="menu-button"
+    aria-label="Stop all nodes"
   >
     <mat-icon>stop</mat-icon>
   </button>
@@ -41,16 +35,27 @@
     mat-icon-button
     (click)="confirmControlsActions('reload')"
     class="menu-button"
+    aria-label="Reload all nodes"
   >
     <mat-icon>replay</mat-icon>
   </button>
-
+  <button
+    matTooltip="Connect console to all nodes"
+    matTooltipClass="custom-tooltip"
+    mat-icon-button
+    class="menu-button"
+    (click)="startConsoleForAllNodes()"
+    aria-label="Connect console to all nodes"
+  >
+    <mat-icon>web_asset</mat-icon>
+  </button>
   <button
     matTooltip="Reset all console connections"
     matTooltipClass="custom-tooltip"
     mat-icon-button
-    (click)="confirmControlsActions('reset')"
     class="menu-button"
+    (click)="confirmControlsActions('reset')"
+    aria-label="Reset all console connections"
   >
     <mat-icon>compare_arrows</mat-icon>
   </button>

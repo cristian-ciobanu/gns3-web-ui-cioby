@@ -21,26 +21,30 @@ export class ProgressComponent implements OnInit, OnDestroy {
 
   visible = signal(false);
   error = signal<any>(null);
-  routerSubscription: Subscription;
+  private subscriptions = new Subscription();
 
   ngOnInit() {
-    this.progressService.state.subscribe((state) => {
-      this.visible.set(state.visible);
+    this.subscriptions.add(
+      this.progressService.state.subscribe((state) => {
+        this.visible.set(state.visible);
 
-      // only set error state once; ignore next "correct" states
-      if (state.error && !this.error()) {
-        this.error.set(state.error);
-      }
+        // only set error state once; ignore next "correct" states
+        if (state.error && !this.error()) {
+          this.error.set(state.error);
+        }
 
-      if (state.clear) {
-        this.error.set(null);
-      }
-    });
+        if (state.clear) {
+          this.error.set(null);
+        }
+      })
+    );
 
     // when page changes clear error state
-    this.routerSubscription = this.router.events.subscribe(() => {
-      this.progressService.clear();
-    });
+    this.subscriptions.add(
+      this.router.events.subscribe(() => {
+        this.progressService.clear();
+      })
+    );
   }
 
   refresh() {
@@ -48,6 +52,6 @@ export class ProgressComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.routerSubscription.unsubscribe();
+    this.subscriptions.unsubscribe();
   }
 }

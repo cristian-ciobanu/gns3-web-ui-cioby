@@ -133,7 +133,7 @@
 // =============================================
 .gns3-chat-message-list__bubble {
   padding: 10px 14px;
-  border-radius: 16px;
+  border-radius: var(--gns3-radius-surface);
   position: relative;
 
   &--user {
@@ -188,7 +188,7 @@
     text-align: center;
     font-size: 12px;
     padding: 8px 16px;
-    border-radius: 20px;
+    border-radius: var(--gns3-radius-round);
     margin: 0 auto;
     border: 1px solid color-mix(in srgb, var(--mat-sys-primary) 30%, transparent);
   }
@@ -200,7 +200,7 @@
     align-items: center;
     gap: 8px;
     padding: 10px 14px;
-    border-radius: 8px;
+    border-radius: var(--gns3-radius-control);
   }
 }
 
@@ -282,7 +282,7 @@
   padding: 8px 14px;
   background: var(--mat-sys-surface-container-low);
   border: 1px solid var(--mat-sys-outline-variant);
-  border-radius: 8px;
+  border-radius: var(--gns3-radius-control);
   cursor: pointer;
   transition: all 100ms ease;
   user-select: none;
@@ -417,7 +417,7 @@
   padding: 10px 16px;
   background: var(--mat-sys-surface-container-low);
   border: 1px solid var(--mat-sys-outline-variant);
-  border-radius: 16px;
+  border-radius: var(--gns3-radius-surface);
   cursor: pointer;
   transition: all 100ms ease;
   max-width: 280px;

@@ -260,13 +260,7 @@ describe('AddDockerTemplateComponent', () => {
 
       component.goBack();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith([
-        '/controller',
-        mockController.id,
-        'preferences',
-        'docker',
-        'templates',
-      ]);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', mockController.id, 'preferences']);
     });
 
     it('should navigate correctly even when controller id is 0', () => {
@@ -275,7 +269,7 @@ describe('AddDockerTemplateComponent', () => {
 
       component.goBack();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', 0, 'preferences', 'docker', 'templates']);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', 0, 'preferences']);
     });
   });
 
@@ -374,13 +368,7 @@ describe('AddDockerTemplateComponent', () => {
       component.addTemplate();
       await fixture.whenStable();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith([
-        '/controller',
-        mockController.id,
-        'preferences',
-        'docker',
-        'templates',
-      ]);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', mockController.id, 'preferences']);
     });
 
     it('should set template_id to a uuid', async () => {

@@ -26,7 +26,7 @@ export class CurveDrawingComponent implements OnInit, OnDestroy {
 
   private isDrawing = false;
   private points: { x: number; y: number }[] = [];
-  private drawingSelected: Subscription;
+  private drawingSelected = new Subscription();
   private svgSelection: Selection<SVGSVGElement, unknown, null, undefined>;
   private canvasGroup: Selection<SVGGElement, unknown, null, undefined>;
   private previewPath: Selection<SVGPathElement, unknown, null, undefined>;

@@ -15,18 +15,20 @@
   </div>
 </header>
 
-<form class="role-management__search-form">
-  <mat-form-field class="role-management__search">
-    <input
-      matInput
-      placeholder="Search role by name"
-      [value]="searchText()"
-      (input)="searchText.set($event.target.value)"
-    />
-  </mat-form-field>
-</form>
-
 <div class="role-management__table-container">
+  <form class="role-management__search-form">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="role-management__search">
+      <input
+        matInput
+        type="search"
+        aria-label="Search roles"
+        placeholder="Search role by name"
+        [value]="searchText()"
+        (input)="searchText.set($event.target.value)"
+      />
+    </mat-form-field>
+  </form>
+
   <mat-table [dataSource]="dataSource | roleFilter : searchText()" matSort #rolesSort="matSort">
     <ng-container matColumnDef="select">
       <mat-header-cell *matHeaderCellDef class="role-management__small-col">

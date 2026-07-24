@@ -28,10 +28,10 @@ import { NodesWidget } from '../../widgets/nodes';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DraggableSelectionComponent implements OnInit, OnDestroy {
-  private start: Subscription;
-  private drag: Subscription;
-  private end: Subscription;
-  private mapSettingsSubscription: Subscription;
+  private start = new Subscription();
+  private drag = new Subscription();
+  private end = new Subscription();
+  private mapSettingsSubscription = new Subscription();
   private isMapLocked: boolean = false;
 
   @Input('svg') svg: SVGSVGElement;

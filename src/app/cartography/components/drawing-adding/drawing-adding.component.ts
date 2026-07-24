@@ -16,7 +16,7 @@ export class DrawingAddingComponent implements OnInit, OnDestroy {
   readonly svg = input<SVGSVGElement>(undefined);
 
   private mapListener: Function;
-  private drawingSelected: Subscription;
+  private drawingSelected = new Subscription();
 
   private drawingsEventSource = inject(DrawingsEventSource);
   private context = inject(Context);

@@ -168,13 +168,7 @@ describe('CopyQemuVmTemplateComponent', () => {
 
   it('should navigate back when goBack is called', () => {
     component.goBack();
-    expect(mockRouter.navigate).toHaveBeenCalledWith([
-      '/controller',
-      mockController.id,
-      'preferences',
-      'qemu',
-      'templates',
-    ]);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', mockController.id, 'preferences']);
   });
 
   it('should show error when addTemplate is called with empty templateName', () => {

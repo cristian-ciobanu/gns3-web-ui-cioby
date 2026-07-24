@@ -92,7 +92,7 @@
   .upload-status {
     margin-top: 16px;
     padding: 12px 16px;
-    border-radius: 8px;
+    border-radius: var(--gns3-radius-control);
     font-size: 14px;
     text-align: center;
 
@@ -115,7 +115,7 @@
   gap: 8px;
   padding: 12px;
   border: 2px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--gns3-radius-control);
   cursor: pointer;
   transition: all 0.2s ease;
   background-color: var(--mat-sys-surface-container);

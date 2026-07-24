@@ -12,20 +12,13 @@
  *    - Risk: May hide real template errors (typos, missing components)
  *    - Mitigation: Manual code review and integration tests needed
  *
- * 2. DrawingAddedComponent.ngOnDestroy Spy:
- *    - Purpose: Prevents cleanup errors when pointToAddSelected.unsubscribe() is called
- *    - Root Cause: ngOnInit doesn't complete, leaving subscriptions undefined
- *    - Risk: DrawingAddedComponent cleanup logic is not tested
- *    - Mitigation: DrawingAddedComponent should have its own unit tests
- *
- * 3. CartographyModule Dependencies:
+ * 2. CartographyModule Dependencies:
  *    - Purpose: Provides 67+ cartography services required by child components
  *    - Issue: Many mocks are simplified/stub implementations
  *    - Risk: Edge cases in cartography logic may not be covered
  *    - Mitigation: Integration/E2E tests should verify full cartography behavior
  *
  * RECOMMENDATIONS:
- * - Create separate unit tests for DrawingAddedComponent
  * - Add integration tests for cartography module
  * - Periodically review NO_ERRORS_SCHEMA usage
  * - Consider refactoring to reduce deep dependency chains
@@ -41,14 +34,11 @@ import { CommonModule } from '@angular/common';
 import { of, Subject } from 'rxjs';
 import { ProjectMapComponent } from './project-map.component';
 import { CartographyModule } from '../../cartography/cartography.module';
-import { DrawingAddedComponent } from '../drawings-listeners/drawing-added/drawing-added.component';
 import { InRectangleHelper } from '../../cartography/helpers/in-rectangle-helper';
 import { ControllerService } from '@services/controller.service';
 import { ProjectService } from '@services/project.service';
 import { NodeService } from '@services/node.service';
 import { LinkService } from '@services/link.service';
-import { MarkerRegistryService } from '@services/marker-registry.service';
-import { MarkerFlashService } from '@services/marker-flash.service';
 import { DrawingService } from '@services/drawing.service';
 import { ProgressService } from '../../common/progress/progress.service';
 import { ProjectWebServiceHandler } from '../../handlers/project-web-service-handler';
@@ -270,8 +260,6 @@ describe('ProjectMapComponent', () => {
   let mockInterfaceStatusWidget: any;
   let mockLabel: any;
   let mockNodesWidget: any;
-  let mockMarkerFlashService: any;
-  let mockMarkerRegistryService: any;
 
   // Mock data
   let mockController: Controller;
@@ -704,20 +692,18 @@ describe('ProjectMapComponent', () => {
     mockPortToMapPortConverter = { convert: vi.fn() };
     mockSymbolToMapSymbolConverter = { convert: vi.fn() };
     mockStylesToFontConverter = { convert: vi.fn() };
-    mockDrawingWidget = { };
-    mockDrawingLineWidget = { };
-    mockEllipseDrawingWidget = { };
-    mockImageDrawingWidget = { };
-    mockLineDrawingWidget = { };
-    mockRectDrawingWidget = { };
-    mockTextDrawingWidget = { };
-    mockLinksWidget = { };
-    mockLayersWidget = { };
-    mockInterfaceStatusWidget = { };
-    mockLabel = { };
-    mockNodesWidget = { };
-    mockMarkerFlashService = { };
-    mockMarkerRegistryService = { };
+    mockDrawingWidget = {};
+    mockDrawingLineWidget = {};
+    mockEllipseDrawingWidget = {};
+    mockImageDrawingWidget = {};
+    mockLineDrawingWidget = {};
+    mockRectDrawingWidget = {};
+    mockTextDrawingWidget = {};
+    mockLinksWidget = {};
+    mockLayersWidget = {};
+    mockInterfaceStatusWidget = {};
+    mockLabel = {};
+    mockNodesWidget = {};
 
     // Configure TestBed with cartography module and all required mocks
     // Note: CartographyModule provides 67+ services that are used by child components
@@ -754,8 +740,6 @@ describe('ProjectMapComponent', () => {
         { provide: MapLinksDataSource, useValue: mockMapLinksDataSource },
         { provide: MapDrawingsDataSource, useValue: mockMapDrawingsDataSource },
         { provide: MapSymbolsDataSource, useValue: mockMapSymbolsDataSource },
-        { provide: MarkerFlashService, useValue: mockMarkerFlashService },
-        { provide: MarkerRegistryService, useValue: mockMarkerRegistryService },
         { provide: SettingsService, useValue: mockSettingsService },
         { provide: ToolsService, useValue: mockToolsService },
         { provide: SelectionManager, useValue: mockSelectionManager },
@@ -833,15 +817,6 @@ describe('ProjectMapComponent', () => {
       .overrideComponent(D3MapComponent, { set: { template: '<svg></svg>' } })
       .compileComponents();
 
-    // ⚠️ WORKAROUND: Spy on DrawingAddedComponent.ngOnDestroy to prevent cleanup errors
-    // Root cause: DrawingAddedComponent.ngOnInit doesn't complete when project data is not ready,
-    // leaving pointToAddSelected subscription undefined. When ngOnDestroy tries to unsubscribe,
-    // it throws "Cannot read properties of undefined (reading 'unsubscribe')".
-    //
-    // Impact: DrawingAddedComponent cleanup logic is NOT tested by these tests
-    // Mitigation: DrawingAddedComponent should have its own dedicated unit tests
-    vi.spyOn(DrawingAddedComponent.prototype, 'ngOnDestroy').mockImplementation(() => {});
-
     fixture = TestBed.createComponent(ProjectMapComponent);
     component = fixture.componentInstance;
 
@@ -850,17 +825,8 @@ describe('ProjectMapComponent', () => {
   });
 
   afterEach(() => {
-    // ⚠️ WORKAROUND: Try-catch around fixture.destroy() to handle complex child component cleanup
-    // Some child components may throw errors during ngOnDestroy due to incomplete initialization
-    // This prevents test failures from bubbling up and marking all tests as failed
     if (fixture) {
-      try {
-        fixture.destroy();
-      } catch (e) {
-        console.error('Cleanup error:', e);
-        // Ignore destroy errors from complex child components
-        // These errors indicate incomplete component lifecycle, not test failures
-      }
+      fixture.destroy();
     }
     vi.clearAllMocks();
   });
@@ -871,7 +837,6 @@ describe('ProjectMapComponent', () => {
     });
 
     it('should have default initial values', () => {
-      expect(component.isProjectMapMenuVisible).toBe(false);
       expect(component.isConsoleVisible).toBe(true);
       expect(component.isTopologySummaryVisible).toBe(true);
       expect(component.isInterfaceLabelVisible).toBe(false);
@@ -882,6 +847,27 @@ describe('ProjectMapComponent', () => {
       expect(component.toolbarVisibility).toBe(true);
       expect(component.symbolScaling).toBe(true);
       expect(component.isAIChatVisible).toBe(false);
+      expect(component.inspectorOpen).toBe(true);
+    });
+  });
+
+  describe('Project-scoped cleanup', () => {
+    it('closes old connections and destroys the topology summary before another project loads', () => {
+      const projectSocket = { readyState: 1, close: vi.fn() } as unknown as WebSocket;
+      const controllerSocket = { readyState: 1, close: vi.fn() } as unknown as WebSocket;
+      const topologySummary = { destroy: vi.fn() };
+      component.projectws = projectSocket;
+      component.ws = controllerSocket;
+      component['instance'] = topologySummary as any;
+
+      component['resetProjectScope']();
+
+      expect(projectSocket.close).toHaveBeenCalled();
+      expect(controllerSocket.close).toHaveBeenCalled();
+      expect(topologySummary.destroy).toHaveBeenCalled();
+      expect(component['instance']).toBeNull();
+      expect(component.projectws).toBeUndefined();
+      expect(component.ws).toBeUndefined();
     });
   });
 
@@ -1022,6 +1008,28 @@ describe('ProjectMapComponent', () => {
     });
   });
 
+  describe('Workspace modes', () => {
+    it('should keep selection, pan, and link modes mutually exclusive', () => {
+      component.activatePanMode();
+      expect(component.tools).toMatchObject({ moving: true, selection: false, draw_link: false });
+
+      component.toggleDrawLineMode();
+      expect(component.tools).toMatchObject({ moving: false, selection: false, draw_link: true });
+
+      component.activateSelectionMode();
+      expect(component.tools).toMatchObject({ moving: false, selection: true, draw_link: false });
+    });
+
+    it('should toggle the inspector without changing topology summary visibility', () => {
+      component.isTopologySummaryVisible = true;
+
+      component.toggleInspector();
+
+      expect(component.inspectorOpen).toBe(false);
+      expect(component.isTopologySummaryVisible).toBe(true);
+    });
+  });
+
   describe('Toggle Show Interface Labels', () => {
     beforeEach(() => {
       vi.clearAllMocks();
@@ -1031,9 +1039,7 @@ describe('ProjectMapComponent', () => {
       component.isInterfaceLabelVisible = false;
 
       // Mock update to return project with updated show_interface_labels
-      mockProjectService.update.mockReturnValue(
-        of({ ...mockProject, show_interface_labels: true })
-      );
+      mockProjectService.update.mockReturnValue(of({ ...mockProject, show_interface_labels: true }));
 
       component.toggleShowInterfaceLabels(true);
 
@@ -1149,18 +1155,6 @@ describe('ProjectMapComponent', () => {
         component.resetZoom();
 
         expect(mockMapScaleService.resetToDefault).toHaveBeenCalled();
-      });
-    });
-  });
-
-  describe('Menu Visibility', () => {
-    describe('showMenu', () => {
-      it('should show project map menu', () => {
-        component.isProjectMapMenuVisible = false;
-
-        component.showMenu();
-
-        expect(component.isProjectMapMenuVisible).toBe(true);
       });
     });
   });

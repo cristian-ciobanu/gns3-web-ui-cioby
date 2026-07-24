@@ -248,13 +248,7 @@ describe('IouTemplateDetailsComponent', () => {
 
       fixture.componentInstance.goBack();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith([
-        '/controller',
-        mockController.id,
-        'preferences',
-        'iou',
-        'templates',
-      ]);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', mockController.id, 'preferences']);
     });
   });
 

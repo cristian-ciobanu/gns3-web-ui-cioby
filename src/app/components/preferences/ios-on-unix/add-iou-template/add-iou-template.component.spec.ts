@@ -313,13 +313,7 @@ describe('AddIouTemplateComponent', () => {
 
       component.goBack();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith([
-        '/controller',
-        mockController.id,
-        'preferences',
-        'iou',
-        'templates',
-      ]);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', mockController.id, 'preferences']);
     });
 
     it('should navigate correctly even when controller id is 0', () => {
@@ -329,7 +323,7 @@ describe('AddIouTemplateComponent', () => {
 
       component.goBack();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', 0, 'preferences', 'iou', 'templates']);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', 0, 'preferences']);
     });
   });
 
@@ -487,13 +481,7 @@ describe('AddIouTemplateComponent', () => {
       component.addTemplate();
       await fixture.whenStable();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith([
-        '/controller',
-        mockController.id,
-        'preferences',
-        'iou',
-        'templates',
-      ]);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', mockController.id, 'preferences']);
     });
 
     it('should set L2 image ethernet_adapters to 4 and serial_adapters to 0', async () => {

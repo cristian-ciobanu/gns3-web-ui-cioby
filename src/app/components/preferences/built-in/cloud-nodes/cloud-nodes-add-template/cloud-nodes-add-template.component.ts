@@ -88,7 +88,7 @@ export class CloudNodesAddTemplateComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/controller', this.controller.id, 'preferences', 'builtin', 'cloud-nodes']);
+    this.router.navigate(['/controller', this.controller.id, 'preferences']);
   }
 
   addTemplate() {

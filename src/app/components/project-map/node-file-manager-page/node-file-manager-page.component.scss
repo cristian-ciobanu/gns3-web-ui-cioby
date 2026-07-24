@@ -56,7 +56,7 @@
 .node-file-manager__progress-btn {
   position: relative;
   overflow: hidden;
-  border-radius: 20px;
+  border-radius: var(--gns3-radius-round);
   border: 1px solid var(--mat-sys-outline);
   background: transparent;
 }

@@ -301,7 +301,7 @@ export class IosTemplateDetailsComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/controller', this.controller.id, 'preferences', 'dynamips', 'templates']);
+    this.router.navigate(['/controller', this.controller.id, 'preferences']);
   }
 
   chooseSymbol() {

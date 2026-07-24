@@ -1,0 +1,98 @@
+/**
+ * GNS3 Web UI - Layout and interaction foundations
+ *
+ * These tokens intentionally contain no color values. Colors continue to come
+ * from the active Angular Material theme.
+ */
+
+:root {
+  --gns3-space-1: 4px;
+  --gns3-space-2: 8px;
+  --gns3-space-3: 12px;
+  --gns3-space-4: 16px;
+  --gns3-space-5: 20px;
+  --gns3-space-6: 24px;
+  --gns3-space-8: 32px;
+
+  --gns3-radius-small: 6px;
+  --gns3-radius-control: 10px;
+  --gns3-radius-surface: 12px;
+  --gns3-radius-round: 999px;
+
+  --gns3-motion-duration-fast: 150ms;
+  --gns3-motion-duration-standard: 200ms;
+  --gns3-motion-easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --gns3-page-background: var(--mat-sys-surface-container-lowest);
+  --gns3-surface-border: 1px solid var(--mat-sys-outline-variant);
+  --gns3-overlay-shadow: 0 12px 32px
+    color-mix(in srgb, var(--mat-sys-shadow) var(--gns3-shadow-opacity-medium), transparent);
+}
+
+/**
+ * Material provides focus treatment for most controls, but native links and
+ * custom interactive elements also need a predictable keyboard focus marker.
+ */
+:where(
+  a[href],
+  button,
+  input,
+  select,
+  textarea,
+  summary,
+  [role='button'],
+  [role='menuitem'],
+  [role='option'],
+  [tabindex]:not([tabindex='-1'])
+):focus-visible {
+  outline: 2px solid var(--mat-sys-primary);
+  outline-offset: 2px;
+}
+
+/**
+ * Icon buttons are intentionally compact, but their hover state should not
+ * move nearby content or make the interface feel unstable.
+ */
+.mat-mdc-icon-button.mat-mdc-icon-button,
+.mat-mdc-icon-button.mat-mdc-icon-button:hover,
+.mat-mdc-icon-button.mat-mdc-icon-button:active {
+  transform: none;
+}
+
+.mat-mdc-icon-button.mat-mdc-icon-button:hover :where(mat-icon, svg),
+.mat-mdc-icon-button.mat-mdc-icon-button:active :where(mat-icon, svg),
+.mat-mdc-button.mat-mdc-button,
+.mat-mdc-button.mat-mdc-button:hover,
+.mat-mdc-button.mat-mdc-button:active,
+.mat-mdc-raised-button.mat-mdc-raised-button,
+.mat-mdc-raised-button.mat-mdc-raised-button:hover,
+.mat-mdc-raised-button.mat-mdc-raised-button:active,
+.mat-mdc-unelevated-button.mat-mdc-unelevated-button,
+.mat-mdc-unelevated-button.mat-mdc-unelevated-button:hover,
+.mat-mdc-unelevated-button.mat-mdc-unelevated-button:active,
+.mat-mdc-outlined-button.mat-mdc-outlined-button,
+.mat-mdc-outlined-button.mat-mdc-outlined-button:hover,
+.mat-mdc-outlined-button.mat-mdc-outlined-button:active {
+  transform: none;
+}
+
+/**
+ * Motion is optional. Stateful controls such as spinners remain useful with
+ * normal preferences, while reduced-motion users get an effectively static UI.
+ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto;
+    animation-delay: 0ms;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-delay: 0ms;
+    transition-duration: 0.01ms;
+  }
+}

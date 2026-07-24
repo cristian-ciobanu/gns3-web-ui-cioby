@@ -1,15 +1,15 @@
-@if (isDraggingEnabled) {
+@if (isDraggingEnabled && !embedded) {
 <div (document:mousemove)="dragWidget($event)" (document:mouseup)="toggleDragging(false)"></div>
 } @if (projectsStatistics) {
 <div
   class="summaryWrapper"
-  (mousedown)="toggleDragging(true)"
-  [ngStyle]="style"
-  [ngClass]="{ lightTheme: isLightThemeEnabled }"
+  (mousedown)="toggleDragging(!embedded)"
+  [ngStyle]="embedded ? null : style"
+  [ngClass]="{ lightTheme: isLightThemeEnabled, 'summaryWrapper--embedded': embedded }"
   mwlResizable
   [validateResize]="validate"
-  [resizeEdges]="{ right: true, left: true, bottom: true, top: true }"
-  [enableGhostResize]="true"
+  [resizeEdges]="embedded ? {} : { right: true, left: true, bottom: true, top: true }"
+  [enableGhostResize]="!embedded"
   (resizeStart)="toggleDragging(false)"
   (resizeEnd)="onResizeEnd($event)"
 >
@@ -89,9 +89,7 @@
                 }
                 {{ truncateComputeName(compute.name) }}
               </div>
-              <div>
-                {{ compute.host }}:{{ compute.port }}
-              </div>
+              <div>{{ compute.host }}:{{ compute.port }}</div>
             </div>
             }
           </div>

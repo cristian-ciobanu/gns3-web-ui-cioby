@@ -61,6 +61,38 @@ describe('DialogConfigService', () => {
 
       expect(config.panelClass).toContain('confirmation-danger-panel');
     });
+
+    it('should preserve pattern classes when adding a content-specific panel class', () => {
+      const config = service.openConfig('standardForm', { panelClass: 'custom-content-panel' });
+
+      expect(config.panelClass).toContain('dialog-pattern-standard');
+      expect(config.panelClass).toContain('custom-content-panel');
+    });
+  });
+
+  describe('Dialog patterns', () => {
+    it.each([
+      ['confirmation', 'dialog-pattern-confirmation'],
+      ['smallInput', 'dialog-pattern-small'],
+      ['standardForm', 'dialog-pattern-standard'],
+      ['largeConfigurator', 'dialog-pattern-large'],
+    ] as const)('should return the responsive %s pattern', (pattern, panelClass) => {
+      const config = service.getPatternConfig(pattern);
+
+      expect(config.panelClass).toContain(panelClass);
+      expect(config.width).toContain('min(');
+      expect(config.maxWidth).toContain('100vw');
+      expect(config.maxHeight).toContain('100dvh');
+    });
+
+    it('should return independent panel class arrays', () => {
+      const first = service.getPatternConfig('smallInput');
+      const second = service.getPatternConfig('smallInput');
+
+      (first.panelClass as string[]).push('changed');
+
+      expect(second.panelClass).not.toContain('changed');
+    });
   });
 
   describe('registerConfig', () => {

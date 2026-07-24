@@ -12,8 +12,8 @@ import { MapChangeDetectorRef } from '../../services/map-change-detector-ref';
   imports: [],
 })
 export class SelectionSelectComponent implements OnInit, OnDestroy {
-  private onSelected: Subscription;
-  private onUnselected: Subscription;
+  private onSelected = new Subscription();
+  private onUnselected = new Subscription();
 
   private selectionManager = inject(SelectionManager);
   private mapChangeDetectorRef = inject(MapChangeDetectorRef);

@@ -122,7 +122,7 @@
             .provider-badge {
               padding: 4px 8px;
               background: var(--mat-sys-primary-container);
-              border-radius: 4px;
+              border-radius: var(--gns3-radius-small);
               font-size: 12px;
               color: var(--mat-sys-on-primary-container);
             }
@@ -185,7 +185,7 @@
                   }
 
                   &:hover mat-icon {
-                    transform: scale(1.35);
+                    color: var(--mat-sys-on-tertiary-container);
                   }
                 }
 
@@ -197,7 +197,6 @@
 
                 &:not(.active-btn):not(.delete-btn):hover mat-icon {
                   color: var(--mat-sys-primary);
-                  transform: scale(1.35);
                 }
 
                 // Delete button
@@ -207,7 +206,7 @@
                 }
 
                 &.delete-btn:hover mat-icon {
-                  transform: scale(1.35);
+                  color: var(--mat-sys-on-error-container);
                 }
               }
             }

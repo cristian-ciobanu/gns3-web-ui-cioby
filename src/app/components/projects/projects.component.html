@@ -1,173 +1,244 @@
-<div class="projects">
-  <div class="projects__content">
-    <!-- Header with Title and Buttons -->
-    <div class="projects__header">
-      <h1 class="projects__title">Projects</h1>
-      <div class="projects__buttons-bar">
-        <button mat-raised-button class="projects__button" color="primary" (click)="addBlankProject()">
-          <mat-icon>add</mat-icon>
-          Add Blank Project
-        </button>
-        <button mat-raised-button class="projects__button" color="primary" (click)="importProject()">
-          <mat-icon>cloud_upload</mat-icon>
-          Import Project
-        </button>
-        <button mat-raised-button class="projects__button" color="primary" (click)="refresh()">
-          <mat-icon>refresh</mat-icon>
-          Refresh Projects
-        </button>
-      </div>
+<section class="projects" aria-labelledby="projects-title">
+  <header class="projects__header">
+    <div class="projects__heading">
+      <h1 id="projects-title" class="projects__title">Projects</h1>
     </div>
 
-    <!-- Search -->
-    <form class="projects__search-form">
-      <mat-form-field class="projects__search">
+    <div class="projects__header-actions">
+      <button mat-flat-button color="primary" (click)="addBlankProject()">
+        <mat-icon>add</mat-icon>
+        New project
+      </button>
+      <button mat-stroked-button (click)="importProject()">
+        <mat-icon>upload</mat-icon>
+        Import
+      </button>
+      <button mat-stroked-button (click)="refresh()">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+      </button>
+    </div>
+  </header>
+
+  <div class="projects__summary" aria-label="Project summary">
+    <span
+      ><strong>{{ projectCounts().total }}</strong> total</span
+    >
+    <span class="projects__summary-divider" aria-hidden="true"></span>
+    <span
+      ><mat-icon class="projects__status-icon projects__status-icon--opened">circle</mat-icon
+      ><strong>{{ projectCounts().opened }}</strong> opened</span
+    >
+    <span class="projects__summary-divider" aria-hidden="true"></span>
+    <span
+      ><mat-icon class="projects__status-icon projects__status-icon--closed">circle</mat-icon
+      ><strong>{{ projectCounts().closed }}</strong> closed</span
+    >
+  </div>
+
+  <section class="projects__workspace" aria-label="Project list">
+    <div class="projects__toolbar">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="projects__search">
         <mat-icon matPrefix>search</mat-icon>
         <input
           matInput
-          placeholder="Search by name or created by"
+          type="search"
+          aria-label="Search projects"
+          placeholder="Search projects"
           [value]="searchText()"
-          (input)="searchText.set($event.target.value)"
+          (input)="setSearchText($event.target.value)"
         />
+        @if (searchText()) {
+        <button matSuffix mat-icon-button type="button" aria-label="Clear search" (click)="setSearchText('')">
+          <mat-icon>close</mat-icon>
+        </button>
+        }
       </mat-form-field>
-    </form>
 
-    <!-- Projects Table -->
-    <div class="projects__table-container">
-      <cdk-virtual-scroll-viewport itemSize="72" minBufferPx="400" maxBufferPx="800">
-        <mat-table #table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)">
-        <ng-container matColumnDef="select">
-          <mat-header-cell *matHeaderCellDef>
-            <mat-checkbox
-              (change)="$event.checked ? allChecked() : unChecked()"
-              [checked]="selection.hasValue() && isAllSelected()"
-              [indeterminate]="selection.hasValue() && !isAllSelected()"
-            >
-            </mat-checkbox>
-          </mat-header-cell>
-          <mat-cell *matCellDef="let row">
-            <mat-checkbox
-              (click)="$event.stopPropagation()"
-              (change)="$event ? selection.toggle(row) : null"
-              [checked]="selection.isSelected(row)"
-            >
-            </mat-checkbox>
-          </mat-cell>
-        </ng-container>
-
-        <ng-container matColumnDef="name">
-          <mat-header-cell *matHeaderCellDef mat-sort-header> Name </mat-header-cell>
-          <mat-cell *matCellDef="let row">
-            <a [routerLink]="['/controller', controller.id, 'project', row.project_id]" class="projects__link">
-              {{ row.name }}
-            </a>
-          </mat-cell>
-        </ng-container>
-
-        <ng-container matColumnDef="created_by">
-          <mat-header-cell *matHeaderCellDef mat-sort-header> Created By </mat-header-cell>
-          <mat-cell *matCellDef="let row"> {{ row.created_by }} </mat-cell>
-        </ng-container>
-
-        <ng-container matColumnDef="actions">
-          <mat-header-cell *matHeaderCellDef class="projects__cell--actions"> Actions </mat-header-cell>
-          <mat-cell class="projects__cell--actions" *matCellDef="let row">
-            <div class="projects__actions-cell">
-              @if (row.status === 'closed') {
-              <button mat-icon-button (click)="open(row)" matTooltip="Open project">
-                <mat-icon aria-label="Open project">play_arrow</mat-icon>
-              </button>
-              } @if (row.status === 'opened') {
-              <button
-                mat-icon-button
-                (click)="close(row)"
-                matTooltip="Close project"
-                [disabled]="isProjectLoading(row.project_id)"
-              >
-                @if (isProjectLoading(row.project_id)) {
-                <mat-progress-spinner diameter="20" mode="indeterminate"></mat-progress-spinner>
-                } @else {
-                <mat-icon aria-label="Close project">pause</mat-icon>
-                }
-              </button>
-              }
-              <button mat-icon-button (click)="editProject(row)" matTooltip="Rename/Edit project">
-                <mat-icon aria-label="Rename project">edit</mat-icon>
-              </button>
-              @if (row.status === 'closed') {
-              <button mat-icon-button (click)="duplicate(row)" matTooltip="Duplicate project">
-                <mat-icon aria-label="Save project as">content_copy</mat-icon>
-              </button>
-              }
-              <button mat-icon-button (click)="exportSelectProject(row)" matTooltip="Export project">
-                <mat-icon aria-label="Export project">file_download</mat-icon>
-              </button>
-            </div>
-          </mat-cell>
-        </ng-container>
-
-        <ng-container matColumnDef="delete">
-          <mat-header-cell *matHeaderCellDef class="projects__cell--actions">
-            @if (selection.selected.length > 1) {
-            <button mat-button (click)="deleteAllFiles()" color="warn" matTooltip="Delete all selected">
-              <mat-icon>delete</mat-icon>
-            </button>
-            }
-          </mat-header-cell>
-          <mat-cell *matCellDef="let row" class="projects__cell--actions">
-            @if (row.status === 'closed' && selection.isSelected(row)) {
-            <button
-              mat-icon-button
-              (click)="delete(row)"
-              color="warn"
-              matTooltip="Delete project"
-              [disabled]="isProjectLoading(row.project_id)"
-            >
-              @if (isProjectLoading(row.project_id)) {
-              <mat-progress-spinner diameter="20" mode="indeterminate"></mat-progress-spinner>
-              } @else {
-              <mat-icon aria-label="Delete project">delete</mat-icon>
-              }
-            </button>
-            }
-          </mat-cell>
-        </ng-container>
-
-        <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
-      </mat-table>
-    </cdk-virtual-scroll-viewport>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="projects__filter">
+        <mat-label>Status</mat-label>
+        <mat-select
+          aria-label="Filter projects by status"
+          [value]="statusFilter()"
+          (selectionChange)="setStatusFilter($event.value)"
+        >
+          <mat-option value="all">All projects</mat-option>
+          <mat-option value="opened">Opened</mat-option>
+          <mat-option value="closed">Closed</mat-option>
+        </mat-select>
+      </mat-form-field>
     </div>
 
-    <!-- Footer -->
-    <footer class="projects__footer">
-      <div class="projects__footer-content">
-        <div class="projects__footer-info">GNS3 Web-UI &copy;2018-{{ currentYear }} v{{ version }}</div>
-        <div class="projects__footer-social">
-          <a
-            class="projects__footer-social-link"
-            href="https://github.com/GNS3"
-            target="_blank"
-            rel="noopener noreferrer"
-            matTooltip="GitHub"
-          >
-            <mat-icon class="projects__footer-icon" svgIcon="github"></mat-icon>
-          </a>
-          <a
-            class="projects__footer-social-link"
-            href="https://www.gns3.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            matTooltip="Website"
-          >
-            @if (!isLightThemeEnabled()) {
-            <mat-icon class="projects__footer-icon" svgIcon="gns3"></mat-icon>
-            } @if (isLightThemeEnabled()) {
-            <mat-icon class="projects__footer-icon" svgIcon="gns3black"></mat-icon>
-            }
-          </a>
-        </div>
-      </div>
-    </footer>
-  </div>
-</div>
+    @if (selection.hasValue()) {
+    <div class="projects__bulk-toolbar" role="region" aria-label="Selected project actions">
+      <span
+        ><strong>{{ selection.selected.length }}</strong> selected</span
+      >
+      <span class="spacer"></span>
+      <button mat-button type="button" (click)="unChecked()">Clear selection</button>
+      <button mat-flat-button color="warn" type="button" (click)="deleteAllFiles()">
+        <mat-icon>delete</mat-icon>
+        Delete selected
+      </button>
+    </div>
+    } @if (displayProjects().length) {
+    <div class="projects__table-container">
+      <cdk-virtual-scroll-viewport itemSize="64" minBufferPx="384" maxBufferPx="768">
+        <mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)">
+          <ng-container matColumnDef="select">
+            <mat-header-cell *matHeaderCellDef>
+              <mat-checkbox
+                aria-label="Select all closed projects"
+                (change)="$event.checked ? allChecked() : unChecked()"
+                [checked]="selection.hasValue() && isAllSelected()"
+                [indeterminate]="selection.hasValue() && !isAllSelected()"
+                [disabled]="projectCounts().closed === 0"
+              ></mat-checkbox>
+            </mat-header-cell>
+            <mat-cell *matCellDef="let row">
+              <mat-checkbox
+                [attr.aria-label]="'Select ' + row.name"
+                (click)="$event.stopPropagation()"
+                (change)="selection.toggle(row)"
+                [checked]="selection.isSelected(row)"
+                [disabled]="!canSelectProject(row)"
+              ></mat-checkbox>
+            </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="name">
+            <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
+            <mat-cell *matCellDef="let row">
+              <div class="projects__name-cell">
+                <span class="projects__project-icon"><mat-icon>account_tree</mat-icon></span>
+                <div>
+                  <a [routerLink]="['/controller', controller.id, 'project', row.project_id]" class="projects__link">
+                    {{ row.name }}
+                  </a>
+                  <span class="projects__project-id">{{ row.project_id }}</span>
+                </div>
+              </div>
+            </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+            <mat-cell *matCellDef="let row">
+              <span
+                class="projects__status"
+                [class.projects__status--opened]="row.status === 'opened'"
+                [class.projects__status--closed]="row.status !== 'opened'"
+              >
+                <mat-icon>circle</mat-icon>
+                {{ row.status === 'opened' ? 'Opened' : 'Closed' }}
+              </span>
+            </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="created_by">
+            <mat-header-cell *matHeaderCellDef mat-sort-header>Owner</mat-header-cell>
+            <mat-cell *matCellDef="let row">{{ row.created_by || 'Unknown' }}</mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <mat-header-cell *matHeaderCellDef class="projects__cell--actions">Actions</mat-header-cell>
+            <mat-cell *matCellDef="let row" class="projects__cell--actions">
+              <div class="projects__row-actions">
+                <button
+                  mat-icon-button
+                  matTooltip="Open workspace"
+                  matTooltipClass="custom-tooltip"
+                  (click)="openWorkspace(row)"
+                  [disabled]="isProjectLoading(row.project_id)"
+                  [attr.aria-label]="'Open workspace for ' + row.name"
+                >
+                  @if (isProjectLoading(row.project_id)) {
+                  <mat-progress-spinner diameter="18" mode="indeterminate"></mat-progress-spinner>
+                  } @else {
+                  <mat-icon>open_in_new</mat-icon>
+                  }
+                </button>
+                <button
+                  mat-icon-button
+                  matTooltip="Edit project"
+                  matTooltipClass="custom-tooltip"
+                  (click)="editProject(row)"
+                  [attr.aria-label]="'Edit ' + row.name"
+                >
+                  <mat-icon>edit</mat-icon>
+                </button>
+                @if (row.status === 'opened') {
+                <button
+                  mat-icon-button
+                  matTooltip="Close project"
+                  matTooltipClass="custom-tooltip"
+                  (click)="close(row)"
+                  [attr.aria-label]="'Close ' + row.name"
+                >
+                  <mat-icon>pause</mat-icon>
+                </button>
+                } @else {
+                <button
+                  mat-icon-button
+                  matTooltip="Duplicate project"
+                  matTooltipClass="custom-tooltip"
+                  (click)="duplicate(row)"
+                  [attr.aria-label]="'Duplicate ' + row.name"
+                >
+                  <mat-icon>content_copy</mat-icon>
+                </button>
+                }
+                <button
+                  mat-icon-button
+                  matTooltip="Export project"
+                  matTooltipClass="custom-tooltip"
+                  (click)="exportSelectProject(row)"
+                  [attr.aria-label]="'Export ' + row.name"
+                >
+                  <mat-icon>download</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  matTooltip="Delete project"
+                  matTooltipClass="custom-tooltip"
+                  class="projects__delete-action"
+                  (click)="delete(row)"
+                  [disabled]="row.status !== 'closed' || isProjectLoading(row.project_id)"
+                  [attr.aria-label]="'Delete ' + row.name"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </mat-cell>
+          </ng-container>
+
+          <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+        </mat-table>
+      </cdk-virtual-scroll-viewport>
+    </div>
+    } @else {
+    <div class="projects__empty-state">
+      <span class="projects__empty-icon"
+        ><mat-icon>{{ hasActiveFilters() ? 'search_off' : 'folder_open' }}</mat-icon></span
+      >
+      <h2>{{ hasActiveFilters() ? 'No matching projects' : 'Create your first project' }}</h2>
+      <p>
+        {{
+          hasActiveFilters()
+            ? 'Try a different search term or status filter.'
+            : 'Start with a blank topology or import an existing portable project.'
+        }}
+      </p>
+      @if (hasActiveFilters()) {
+      <button mat-stroked-button type="button" (click)="clearFilters()">Clear filters</button>
+      } @else {
+      <button mat-flat-button color="primary" type="button" (click)="addBlankProject()">
+        <mat-icon>add</mat-icon>
+        New project
+      </button>
+      }
+    </div>
+    }
+  </section>
+</section>

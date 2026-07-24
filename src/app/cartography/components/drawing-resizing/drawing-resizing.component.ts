@@ -15,7 +15,7 @@ import { DrawingsWidget } from '../../widgets/drawings';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DrawingResizingComponent implements OnInit, OnDestroy {
-  resizingFinished: Subscription;
+  resizingFinished = new Subscription();
 
   private drawingsWidget = inject(DrawingsWidget);
   private drawingsEventSource = inject(DrawingsEventSource);

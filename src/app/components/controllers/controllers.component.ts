@@ -11,7 +11,6 @@ import {
   model,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSort, MatSortable, MatSortModule } from '@angular/material/sort';
@@ -20,7 +19,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { BehaviorSubject, interval, merge, Observable, Subscription } from 'rxjs';
@@ -29,7 +27,6 @@ import { Controller, ControllerProtocol } from '@models/controller';
 import { ControllerManagementService } from '@services/controller-management.service';
 import { ControllerDatabase } from '@services/controller.database';
 import { ControllerService } from '@services/controller.service';
-import { ThemeService } from '@services/theme.service';
 import { ToasterService } from '@services/toaster.service';
 import { ConfirmationBottomSheetComponent } from '../projects/confirmation-bottomsheet/confirmation-bottomsheet.component';
 import { AddControllerDialogComponent } from './add-controller-dialog/add-controller-dialog.component';
@@ -43,7 +40,6 @@ import { version } from '../../version';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
-    FormsModule,
     RouterModule,
     MatDialogModule,
     MatSortModule,
@@ -53,7 +49,6 @@ import { version } from '../../version';
     MatIconModule,
     MatButtonModule,
     MatBottomSheetModule,
-    MatMenuModule,
     MatTooltipModule,
   ],
 })
@@ -66,7 +61,6 @@ export class ControllersComponent implements OnInit, AfterViewInit, OnDestroy {
   private bottomSheet = inject(MatBottomSheet);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private themeService = inject(ThemeService);
   private toasterService = inject(ToasterService);
 
   dataSource: ControllerDataSource | null = null;
@@ -278,6 +272,16 @@ export class ControllersComponent implements OnInit, AfterViewInit, OnDestroy {
     return controller.status;
   }
 
+  controllerCounts(): { total: number; running: number; stopped: number } {
+    const controllers = this.controllerDatabase?.data || [];
+    const running = controllers.filter((controller) => this.getControllerStatus(controller) === 'running').length;
+    return {
+      total: controllers.length,
+      running,
+      stopped: controllers.length - running,
+    };
+  }
+
   deleteController(controller: Controller) {
     const bottomSheetRef = this.bottomSheet.open(ConfirmationBottomSheetComponent, {
       data: { message: 'Do you want to delete the controller?' },
@@ -327,9 +331,6 @@ export class ControllersComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  isLightThemeEnabled() {
-    return this.themeService.getActualTheme() === 'light';
-  }
 }
 
 export class ControllerDataSource extends DataSource<Controller> {

@@ -9,7 +9,6 @@ import { ProjectService } from '@services/project.service';
 import { SettingsService, Settings } from '@services/settings.service';
 import { ProgressService } from '../../common/progress/progress.service';
 import { RecentlyOpenedProjectService } from '@services/recentlyOpenedProject.service';
-import { ThemeService } from '@services/theme.service';
 import { ToasterService } from '@services/toaster.service';
 import { NotificationService, ProjectNotification } from '@services/notification.service';
 import { Project } from '@models/project';
@@ -24,7 +23,6 @@ describe('ProjectsComponent', () => {
   let mockSettingsService: any;
   let mockProgressService: any;
   let mockRecentlyOpenedProjectService: any;
-  let mockThemeService: any;
   let mockToasterService: any;
   let mockNotificationService: any;
   let mockDialog: any;
@@ -82,10 +80,8 @@ describe('ProjectsComponent', () => {
 
     mockRecentlyOpenedProjectService = {
       setcontrollerIdProjectList: vi.fn(),
-    };
-
-    mockThemeService = {
-      getActualTheme: vi.fn().mockReturnValue('dark'),
+      setcontrollerId: vi.fn(),
+      setProjectId: vi.fn(),
     };
 
     mockToasterService = {
@@ -132,7 +128,6 @@ describe('ProjectsComponent', () => {
         { provide: SettingsService, useValue: mockSettingsService },
         { provide: ProgressService, useValue: mockProgressService },
         { provide: RecentlyOpenedProjectService, useValue: mockRecentlyOpenedProjectService },
-        { provide: ThemeService, useValue: mockThemeService },
         { provide: ToasterService, useValue: mockToasterService },
         { provide: NotificationService, useValue: mockNotificationService },
         { provide: MatDialog, useValue: mockDialog },
@@ -158,12 +153,7 @@ describe('ProjectsComponent', () => {
 
     it('should have displayedColumns with correct values', () => {
       fixture.detectChanges();
-      expect(component.displayedColumns).toEqual(['select', 'name', 'created_by', 'actions', 'delete']);
-    });
-
-    it('should have currentYear set to current year', () => {
-      fixture.detectChanges();
-      expect(component.currentYear).toBe(new Date().getFullYear());
+      expect(component.displayedColumns).toEqual(['select', 'name', 'status', 'created_by', 'actions']);
     });
   });
 
@@ -171,7 +161,7 @@ describe('ProjectsComponent', () => {
     it('should call recentlyOpenedProjectService with controller id', () => {
       fixture.detectChanges();
       expect(mockRecentlyOpenedProjectService.setcontrollerIdProjectList).toHaveBeenCalledWith(
-        mockController.id.toString(),
+        mockController.id.toString()
       );
     });
 
@@ -186,36 +176,14 @@ describe('ProjectsComponent', () => {
     });
   });
 
-  describe('isLightThemeEnabled', () => {
-    it('should return true for light theme', () => {
-      fixture.detectChanges();
-      mockThemeService.getActualTheme.mockReturnValue('light');
-
-      const result = component.isLightThemeEnabled();
-
-      expect(result).toBe(true);
-    });
-
-    it('should return false for dark theme', () => {
-      fixture.detectChanges();
-      mockThemeService.getActualTheme.mockReturnValue('dark');
-
-      const result = component.isLightThemeEnabled();
-
-      expect(result).toBe(false);
-    });
-  });
-
   describe('Selection', () => {
     it('should clear selection on unChecked', () => {
       fixture.detectChanges();
       component.selection.select(mockProjects[0]);
-      component.isAllDelete = true;
 
       component.unChecked();
 
       expect(component.selection.selected.length).toBe(0);
-      expect(component.isAllDelete).toBe(false);
     });
 
     it('should select all projects on allChecked', () => {
@@ -224,8 +192,7 @@ describe('ProjectsComponent', () => {
 
       component.allChecked();
 
-      expect(component.selection.selected.length).toBe(2);
-      expect(component.isAllDelete).toBe(true);
+      expect(component.selection.selected).toEqual([mockProjects[0]]);
     });
 
     it('should return true from isAllSelected when all selected', () => {
@@ -240,7 +207,7 @@ describe('ProjectsComponent', () => {
 
     it('should return false from isAllSelected when not all selected', () => {
       fixture.detectChanges();
-      component['_projects'].set(mockProjects);
+      component['_projects'].set([mockProjects[0], { ...mockProjects[1], status: 'closed' }]);
       component.selection.select(mockProjects[0]);
 
       const result = component.isAllSelected();
@@ -266,7 +233,7 @@ describe('ProjectsComponent', () => {
 
       component.selectAllImages();
 
-      expect(component.selection.selected.length).toBe(2);
+      expect(component.selection.selected).toEqual([mockProjects[0]]);
     });
   });
 
@@ -299,6 +266,48 @@ describe('ProjectsComponent', () => {
 
       const displayed = component.displayProjects();
       expect(displayed.length).toBe(2);
+    });
+
+    it('should filter projects by status', () => {
+      fixture.detectChanges();
+      component['_projects'].set(mockProjects);
+
+      component.statusFilter.set('opened');
+
+      expect(component.displayProjects()).toEqual([mockProjects[1]]);
+    });
+
+    it('should clear search and status filters together', () => {
+      fixture.detectChanges();
+      component.searchText.set('Project A');
+      component.statusFilter.set('closed');
+
+      component.clearFilters();
+
+      expect(component.searchText()).toBe('');
+      expect(component.statusFilter()).toBe('all');
+    });
+  });
+
+  describe('workspace navigation', () => {
+    it('should navigate directly when the project is already opened', () => {
+      fixture.detectChanges();
+
+      component.openWorkspace(mockProjects[1]);
+
+      expect(mockRecentlyOpenedProjectService.setcontrollerId).toHaveBeenCalledWith('1');
+      expect(mockRecentlyOpenedProjectService.setProjectId).toHaveBeenCalledWith('proj2');
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', 1, 'project', 'proj2']);
+    });
+
+    it('should open a closed project before navigating to its workspace', () => {
+      mockProjectService.open.mockReturnValue(of({ ...mockProjects[0], status: 'opened' }));
+      fixture.detectChanges();
+
+      component.openWorkspace(mockProjects[0]);
+
+      expect(mockProjectService.open).toHaveBeenCalledWith(mockController, 'proj1');
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/controller', 1, 'project', 'proj1']);
     });
   });
 
@@ -340,7 +349,7 @@ describe('ProjectsComponent', () => {
       });
 
       expect(component['_projects']().length).toBe(3);
-      expect(component['_projects']().find(p => p.project_id === 'proj3')).toBeTruthy();
+      expect(component['_projects']().find((p) => p.project_id === 'proj3')).toBeTruthy();
     });
 
     it('should update an existing project when project.updated notification arrives', () => {
@@ -353,7 +362,7 @@ describe('ProjectsComponent', () => {
         event: updated,
       });
 
-      const project = component['_projects']().find(p => p.project_id === 'proj1');
+      const project = component['_projects']().find((p) => p.project_id === 'proj1');
       expect(project?.name).toBe('Updated A');
     });
 
@@ -367,7 +376,7 @@ describe('ProjectsComponent', () => {
         event: opened,
       });
 
-      const project = component['_projects']().find(p => p.project_id === 'proj1');
+      const project = component['_projects']().find((p) => p.project_id === 'proj1');
       expect(project?.status).toBe('opened');
     });
 
@@ -382,7 +391,7 @@ describe('ProjectsComponent', () => {
         event: closed,
       });
 
-      const project = component['_projects']().find(p => p.project_id === 'proj1');
+      const project = component['_projects']().find((p) => p.project_id === 'proj1');
       expect(project?.status).toBe('closed');
     });
 
@@ -396,7 +405,7 @@ describe('ProjectsComponent', () => {
       });
 
       expect(component['_projects']().length).toBe(1);
-      expect(component['_projects']().find(p => p.project_id === 'proj1')).toBeFalsy();
+      expect(component['_projects']().find((p) => p.project_id === 'proj1')).toBeFalsy();
     });
   });
 
@@ -408,7 +417,7 @@ describe('ProjectsComponent', () => {
 
     it('should return true for a project that is loading', () => {
       fixture.detectChanges();
-      component['_loadingProjects'].update(set => {
+      component['_loadingProjects'].update((set) => {
         const next = new Set(set);
         next.add('proj1');
         return next;

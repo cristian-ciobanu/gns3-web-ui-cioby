@@ -22,7 +22,7 @@ import { ToasterService } from '@services/toaster.service';
 export class LinkCreatedComponent implements OnInit, OnDestroy {
   readonly controller = input<Controller>(undefined);
   @Input() project: Project;
-  private linkCreated: Subscription;
+  private linkCreated = new Subscription();
 
   private projectService = inject(ProjectService);
   private linkService = inject(LinkService);

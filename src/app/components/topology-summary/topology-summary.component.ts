@@ -49,6 +49,7 @@ export class TopologySummaryComponent implements OnInit, OnDestroy {
 
   @Input() controller: Controller;
   @Input() project: Project;
+  @Input() embedded = false;
 
   // Track if computes have been initialized
   private computesInitialized = false;
@@ -58,6 +59,7 @@ export class TopologySummaryComponent implements OnInit, OnDestroy {
   public style = {};
   public styleInside = { height: `280px` };
   private subscriptions: Subscription[] = [];
+  private initializationTimer: ReturnType<typeof setTimeout>;
   projectsStatistics: ProjectStatistics;
   nodes: Node[] = [];
   filteredNodes: Node[] = [];
@@ -100,11 +102,13 @@ export class TopologySummaryComponent implements OnInit, OnDestroy {
     // Delay initialization to wait for controller and project to be set
     // This is necessary because the component is dynamically loaded
     // and ngOnInit runs before the @Input properties are set
-    setTimeout(() => {
+    this.initializationTimer = setTimeout(() => {
       this.initializeComputesAndNotifications();
     }, 0);
 
-    this.revertPosition();
+    if (!this.embedded) {
+      this.revertPosition();
+    }
   }
 
   private initializeComputesAndNotifications() {
@@ -298,6 +302,9 @@ export class TopologySummaryComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (this.initializationTimer) {
+      clearTimeout(this.initializationTimer);
+    }
     this.subscriptions.forEach((subscription: Subscription) => subscription.unsubscribe());
   }
 

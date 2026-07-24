@@ -122,6 +122,21 @@ describe('NodesMenuComponent', () => {
     fixture.destroy();
   });
 
+  it('should expose all node and console actions directly in the toolbar', () => {
+    const labels = Array.from(fixture.nativeElement.querySelectorAll('button')).map((button: HTMLButtonElement) =>
+      button.getAttribute('aria-label')
+    );
+
+    expect(labels).toEqual([
+      'Start or resume all nodes',
+      'Suspend all nodes',
+      'Stop all nodes',
+      'Reload all nodes',
+      'Connect console to all nodes',
+      'Reset all console connections',
+    ]);
+  });
+
   describe('startConsoleForAllNodes', () => {
     it('should open consoles in widget when openConsolesInWidget is true', () => {
       fixture.componentInstance.startConsoleForAllNodes();

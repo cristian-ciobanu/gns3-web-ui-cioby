@@ -236,6 +236,16 @@ describe('ProjectMapMenuComponent', () => {
         isTextChosen: false,
       });
     });
+
+    it('should show screenshot, AI, and fault tools in the tool rail', () => {
+      fixture.detectChanges();
+
+      const element = fixture.nativeElement as HTMLElement;
+      expect(element.querySelector('.ai-chat-button')).not.toBeNull();
+      expect(element.querySelector('.fault-inject-button')).not.toBeNull();
+      expect(element.textContent).toContain('photo_camera');
+      expect(element.textContent).toContain('create');
+    });
   });
 
   describe('ngOnInit', () => {

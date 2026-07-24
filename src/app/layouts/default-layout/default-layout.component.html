@@ -1,101 +1,242 @@
-<header class="header">
-  <mat-toolbar class="toolbar-primary">
-    <button
-      mat-icon-button
-      class="gns3-button menu-button"
-      [matMenuTriggerFor]="mainMenu"
-    >
-      <mat-icon svgIcon="gns3"></mat-icon>
-    </button>
-
-    @if (!recentlyOpenedProjectId && controllerIdProjectList) {
-    <button mat-button (click)="listProjects()">Projects</button>
-    } @if (recentlyOpenedProjectId && recentlyOpenedcontrollerId) {
-    <button mat-button class="back-to-project-button" (click)="backToProject()">Back to project</button>
-    }
-
-    <span class="spacer"></span>
-
-    <button mat-icon-button [matMenuTriggerFor]="menu">
-      <mat-icon>more_vert</mat-icon>
-    </button>
-
-    <!-- GNS3 right menu -->
-    <mat-menu #menu="matMenu">
-      <button mat-menu-item [disabled]="!controllerId" [routerLink]="['controller', controllerId, 'systemstatus']">
-        <mat-icon>info</mat-icon>
-        <span>System status</span>
-      </button>
-      <button mat-menu-item [disabled]="!controllerId" [routerLink]="['controller', controllerId, 'settings']">
-        <mat-icon>settings</mat-icon>
-        <span>Settings</span>
-      </button>
-      <button
-        mat-menu-item
-        [disabled]="!controllerId"
-        [routerLink]="['controller', controllerId, 'management', 'users']"
+<mat-drawer-container class="application-shell" [hasBackdrop]="isMobile" autosize>
+  <mat-drawer
+    class="navigation"
+    [class.navigation--collapsed]="isRailCollapsed"
+    [mode]="isMobile ? 'over' : 'side'"
+    [opened]="isMobile ? mobileNavigationOpen : true"
+    [disableClose]="!isMobile"
+    (closedStart)="mobileNavigationOpen = false"
+  >
+    <div class="navigation__content">
+      <a
+        class="navigation__brand"
+        routerLink="/controllers"
+        aria-label="GNS3 controllers"
+        matTooltip="Controllers"
+        [matTooltipDisabled]="!isRailCollapsed"
+        (click)="handleNavigation()"
       >
-        <mat-icon>groups</mat-icon>
-        <span>Management</span>
-      </button>
-      <button mat-menu-item [disabled]="!controllerId" [routerLink]="['controller', controllerId, 'help']">
-        <mat-icon>help</mat-icon>
-        <span>Help</span>
-      </button>
-      <button mat-menu-item [disabled]="!controllerId" (click)="openLoggedUserDialog()">
-        <mat-icon>person</mat-icon>
-        <span>User info</span>
-      </button>
-      <button mat-menu-item [disabled]="!controllerId" (click)="openApiKeyManagementDialog()">
-        <mat-icon>vpn_key</mat-icon>
-        <span>API Keys</span>
-      </button>
-      <button mat-menu-item [disabled]="!controllerId" (click)="openAiProfileDialog()">
-        <mat-icon>psychology</mat-icon>
-        <span>AI Profile</span>
-      </button>
-      <button mat-menu-item [disabled]="!controllerId" (click)="goToDocumentation()">
-        <mat-icon>person</mat-icon>
-        <span>API documentation</span>
-      </button>
-      <button mat-menu-item [disabled]="!controllerId" (click)="logout()">
-        <mat-icon>highlight_off</mat-icon>
-        <span>Logout</span>
-      </button>
-    </mat-menu>
+        <mat-icon svgIcon="gns3"></mat-icon>
+        <span class="navigation__brand-label">GNS3</span>
+      </a>
 
-    <!-- GNS3 left menu -->
-    <mat-menu #mainMenu="matMenu">
-      <button mat-menu-item [routerLink]="['/controllers']">
-        <mat-icon>developer_board</mat-icon>
-        <span>Controllers</span>
-      </button>
-      <button mat-menu-item [disabled]="!controllerId" [routerLink]="['/controller', controllerId, 'projects']">
-        <mat-icon>work</mat-icon>
-        <span>Projects</span>
-      </button>
-      <button mat-menu-item [disabled]="!controllerId" [routerLink]="['controller', controllerId, 'preferences']">
-        <mat-icon>settings_applications</mat-icon>
-        <span>Template preferences</span>
-      </button>
-      <button mat-menu-item [disabled]="!controllerId" [routerLink]="['controller', controllerId, 'computes']">
-        <mat-icon>cloud</mat-icon>
-        <span>Computes</span>
-      </button>
-      <button mat-menu-item [disabled]="!controllerId" [routerLink]="['controller', controllerId, 'image-manager']">
-        <mat-icon>collections</mat-icon>
-        <span>Image manager</span>
-      </button>
-      <button mat-menu-item [disabled]="!controllerId" (click)="addNewTemplate()">
-        <mat-icon>control_point</mat-icon>
-        <span>New template</span>
-      </button>
-    </mat-menu>
-  </mat-toolbar>
-</header>
+      <nav class="navigation__items" aria-label="Primary navigation">
+        <a
+          class="navigation__item"
+          routerLink="/controllers"
+          routerLinkActive="navigation__item--active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          matTooltip="Controllers"
+          [matTooltipDisabled]="!isRailCollapsed"
+          (click)="handleNavigation()"
+        >
+          <mat-icon>developer_board</mat-icon>
+          <span class="navigation__label">Controllers</span>
+        </a>
 
-<main class="main-content">
-  <router-outlet></router-outlet>
-</main>
+        @if (isControllerConnected) {
+        <a
+          class="navigation__item"
+          [routerLink]="['/controller', controllerId, 'projects']"
+          routerLinkActive="navigation__item--active"
+          matTooltip="Projects"
+          [matTooltipDisabled]="!isRailCollapsed"
+          (click)="handleNavigation()"
+        >
+          <mat-icon>folder_open</mat-icon>
+          <span class="navigation__label">Projects</span>
+        </a>
+
+        <button
+          type="button"
+          class="navigation__item navigation__item--button"
+          [class.navigation__item--active]="isWorkspaceRoute"
+          matTooltip="Workspace"
+          [matTooltipDisabled]="!isRailCollapsed"
+          (click)="openWorkspace()"
+        >
+          <mat-icon>dashboard</mat-icon>
+          <span class="navigation__label">Workspace</span>
+        </button>
+
+        <a
+          class="navigation__item"
+          [routerLink]="['/controller', controllerId, 'preferences']"
+          routerLinkActive="navigation__item--active"
+          matTooltip="Templates"
+          [matTooltipDisabled]="!isRailCollapsed"
+          (click)="handleNavigation()"
+        >
+          <mat-icon>settings_applications</mat-icon>
+          <span class="navigation__label">Templates</span>
+        </a>
+
+        <a
+          class="navigation__item"
+          [routerLink]="['/controller', controllerId, 'image-manager']"
+          routerLinkActive="navigation__item--active"
+          matTooltip="Image manager"
+          [matTooltipDisabled]="!isRailCollapsed"
+          (click)="handleNavigation()"
+        >
+          <mat-icon>collections</mat-icon>
+          <span class="navigation__label">Image manager</span>
+        </a>
+
+        <a
+          class="navigation__item"
+          [routerLink]="['/controller', controllerId, 'computes']"
+          routerLinkActive="navigation__item--active"
+          matTooltip="Computes"
+          [matTooltipDisabled]="!isRailCollapsed"
+          (click)="handleNavigation()"
+        >
+          <mat-icon>dns</mat-icon>
+          <span class="navigation__label">Computes</span>
+        </a>
+        }
+      </nav>
+
+      @if (isControllerConnected) {
+      <nav class="navigation__items navigation__items--secondary" aria-label="Administration and help">
+        <a
+          class="navigation__item"
+          [routerLink]="['/controller', controllerId, 'management', 'users']"
+          routerLinkActive="navigation__item--active"
+          matTooltip="Management"
+          [matTooltipDisabled]="!isRailCollapsed"
+          (click)="handleNavigation()"
+        >
+          <mat-icon>groups</mat-icon>
+          <span class="navigation__label">Management</span>
+        </a>
+
+        <a
+          class="navigation__item"
+          [routerLink]="['/controller', controllerId, 'settings']"
+          routerLinkActive="navigation__item--active"
+          matTooltip="Settings"
+          [matTooltipDisabled]="!isRailCollapsed"
+          (click)="handleNavigation()"
+        >
+          <mat-icon>settings</mat-icon>
+          <span class="navigation__label">Settings</span>
+        </a>
+
+        <a
+          class="navigation__item"
+          [routerLink]="['/controller', controllerId, 'help']"
+          routerLinkActive="navigation__item--active"
+          matTooltip="Help"
+          [matTooltipDisabled]="!isRailCollapsed"
+          (click)="handleNavigation()"
+        >
+          <mat-icon>help</mat-icon>
+          <span class="navigation__label">Help</span>
+        </a>
+      </nav>
+      }
+    </div>
+  </mat-drawer>
+
+  <mat-drawer-content class="shell-content">
+    <header class="header">
+      <mat-toolbar color="primary" class="toolbar-primary">
+        @if (isMobile) {
+        <button mat-icon-button aria-label="Open navigation" (click)="toggleMobileNavigation()">
+          <mat-icon>menu</mat-icon>
+        </button>
+        }
+
+        <div class="toolbar-primary__context">
+          @if (isControllerConnected) {
+          <button
+            mat-button
+            class="controller-context"
+            [routerLink]="['/controller', controllerId, 'systemstatus']"
+            matTooltip="Open system status"
+          >
+            <span class="controller-context__status"></span>
+            <span class="controller-context__name">{{ controllerDisplayName }}</span>
+            <span class="controller-context__separator" aria-hidden="true">·</span>
+            <span class="controller-context__state">Connected</span>
+          </button>
+
+          @if ( recentlyOpenedProjectId && recentlyOpenedcontrollerId && recentlyOpenedcontrollerId === controllerId ) {
+          <button mat-button class="project-context" (click)="backToProject()" matTooltip="Back to current project">
+            <mat-icon>account_tree</mat-icon>
+            <span>{{ project?.name || 'Current project' }}</span>
+          </button>
+          } }
+        </div>
+
+        <span class="spacer"></span>
+
+        <button
+          mat-icon-button
+          aria-label="Notifications"
+          matTooltip="Notifications"
+          [matMenuTriggerFor]="notificationsMenu"
+        >
+          <mat-icon>notifications</mat-icon>
+        </button>
+
+        @if (isControllerConnected) {
+        <button mat-button class="user-menu-button" aria-label="User menu" [matMenuTriggerFor]="userMenu">
+          <span class="user-menu-button__avatar">{{ currentUserInitials }}</span>
+          <span class="user-menu-button__label">{{ currentUserLabel }}</span>
+          <mat-icon>arrow_drop_down</mat-icon>
+        </button>
+        }
+      </mat-toolbar>
+    </header>
+
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+  </mat-drawer-content>
+</mat-drawer-container>
+
+<mat-menu #notificationsMenu="matMenu" class="notifications-menu">
+  @if (shellNotifications.length) {
+  <div class="notifications-header" (click)="$event.stopPropagation()">
+    <span>Notifications</span>
+    <button mat-button (click)="clearNotifications()">Clear</button>
+  </div>
+  @for (notification of shellNotifications; track notification) {
+  <div class="notification-item" (click)="$event.stopPropagation()">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ notification }}</span>
+  </div>
+  } } @else {
+  <div class="notifications-empty" (click)="$event.stopPropagation()">
+    <mat-icon>notifications_none</mat-icon>
+    <span>No new notifications</span>
+  </div>
+  }
+</mat-menu>
+
+<mat-menu #userMenu="matMenu">
+  <button mat-menu-item [disabled]="!controllerId" (click)="openLoggedUserDialog()">
+    <mat-icon>person</mat-icon>
+    <span>User info</span>
+  </button>
+  <button mat-menu-item [disabled]="!controllerId" (click)="openApiKeyManagementDialog()">
+    <mat-icon>vpn_key</mat-icon>
+    <span>API keys</span>
+  </button>
+  <button mat-menu-item [disabled]="!controllerId" (click)="openAiProfileDialog()">
+    <mat-icon>psychology</mat-icon>
+    <span>AI profile</span>
+  </button>
+  <button mat-menu-item [disabled]="!controllerId" (click)="goToDocumentation()">
+    <mat-icon>code</mat-icon>
+    <span>API documentation</span>
+  </button>
+  <button mat-menu-item [disabled]="!controllerId" (click)="logout()">
+    <mat-icon>logout</mat-icon>
+    <span>Log out</span>
+  </button>
+</mat-menu>
 
 <app-progress></app-progress>

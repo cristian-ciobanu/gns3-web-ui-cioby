@@ -19,7 +19,7 @@ import { ToasterService } from '@services/toaster.service';
 })
 export class DrawingResizedComponent implements OnInit, OnDestroy {
   readonly controller = input<Controller>(undefined);
-  private drawingResized: Subscription;
+  private drawingResized = new Subscription();
 
   private drawingService = inject(DrawingService);
   private drawingsDataSource = inject(DrawingsDataSource);

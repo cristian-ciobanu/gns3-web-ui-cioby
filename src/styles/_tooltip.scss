@@ -12,7 +12,7 @@
   color: var(--mat-sys-inverse-on-surface);
   font-size: 12px;
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: var(--gns3-radius-small);
   max-width: 200px;
   word-wrap: break-word;
 }

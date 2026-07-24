@@ -29,6 +29,7 @@ export class imageDatabase {
 
 export class imageDataSource extends DataSource<ImageTableRow> {
   private filterChange: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  private typeFilterChange: BehaviorSubject<string> = new BehaviorSubject<string>('all');
 
   constructor(private controllerDatabase: imageDatabase, private sort?: MatSort, private paginator?: MatPaginator) {
     super();
@@ -38,15 +39,26 @@ export class imageDataSource extends DataSource<ImageTableRow> {
     this.filterChange.next((filter || '').trim().toLowerCase());
   }
 
+  setTypeFilter(imageType: string) {
+    this.typeFilterChange.next((imageType || 'all').trim().toLowerCase());
+  }
+
   connect(): Observable<ImageTableRow[]> {
     const sortChanges = this.sort ? this.sort.sortChange : new BehaviorSubject(null);
     const pageChanges = this.paginator ? this.paginator.page : new BehaviorSubject(null);
-    return merge(this.controllerDatabase.dataChange, sortChanges, this.filterChange, pageChanges).pipe(
+    return merge(
+      this.controllerDatabase.dataChange,
+      sortChanges,
+      this.filterChange,
+      this.typeFilterChange,
+      pageChanges
+    ).pipe(
       map(() => {
         let data = this.controllerDatabase.data.slice();
         const filter = this.filterChange.value;
+        const typeFilter = this.typeFilterChange.value;
 
-        // Apply filter
+        // Apply text and image type filters before sorting and pagination.
         if (filter) {
           data = data.filter((row: ImageTableRow) => {
             const searchable = [row.filename, row.image_type, row.image_size, row.created_at, row.uploadStatus]
@@ -54,6 +66,9 @@ export class imageDataSource extends DataSource<ImageTableRow> {
               .join(' ');
             return searchable.includes(filter);
           });
+        }
+        if (typeFilter !== 'all') {
+          data = data.filter((row: ImageTableRow) => String(row.image_type || '').toLowerCase() === typeFilter);
         }
 
         // Apply sort
@@ -63,7 +78,8 @@ export class imageDataSource extends DataSource<ImageTableRow> {
           data = data.sort((a: ImageTableRow, b: ImageTableRow) => {
             const valueA = this.getSortValue(a, this.sort.active);
             const valueB = this.getSortValue(b, this.sort.active);
-            return (valueA < valueB ? -1 : 1) * (this.sort.direction === 'asc' ? 1 : -1);
+            const comparison = valueA === valueB ? 0 : valueA < valueB ? -1 : 1;
+            return comparison * (this.sort.direction === 'asc' ? 1 : -1);
           });
         }
 

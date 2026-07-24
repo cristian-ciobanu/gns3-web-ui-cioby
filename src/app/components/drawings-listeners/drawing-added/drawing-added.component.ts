@@ -36,7 +36,7 @@ export class DrawingAddedComponent implements OnInit, OnDestroy, OnChanges {
   @Input() project: Project;
   @Input() selectedDrawing: string;
   @Output() drawingSaved = new EventEmitter<boolean>();
-  private pointToAddSelected: Subscription;
+  private pointToAddSelected = new Subscription();
 
   private drawingService = inject(DrawingService);
   private drawingsDataSource = inject(DrawingsDataSource);
@@ -71,19 +71,17 @@ export class DrawingAddedComponent implements OnInit, OnDestroy, OnChanges {
     let drawing = this.drawingsFactory.getDrawingMock(this.selectedDrawing);
     let svgText = this.mapDrawingToSvgConverter.convert(drawing);
 
-    this.drawingService
-      .add(this.controller(), this.project.project_id, evt.x, evt.y, svgText)
-      .subscribe({
-        next: (controllerDrawing: Drawing) => {
-          this.drawingsDataSource.add(controllerDrawing);
-          this.drawingSaved.emit(true);
-        },
-        error: (err) => {
-          const message = err.error?.message || err.message || 'Failed to create drawing';
-          this.toasterService.error(message);
-          this.cdr.markForCheck();
-        },
-      });
+    this.drawingService.add(this.controller(), this.project.project_id, evt.x, evt.y, svgText).subscribe({
+      next: (controllerDrawing: Drawing) => {
+        this.drawingsDataSource.add(controllerDrawing);
+        this.drawingSaved.emit(true);
+      },
+      error: (err) => {
+        const message = err.error?.message || err.message || 'Failed to create drawing';
+        this.toasterService.error(message);
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   ngOnDestroy() {

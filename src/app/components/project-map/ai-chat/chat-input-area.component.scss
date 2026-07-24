@@ -25,7 +25,7 @@
   max-height: 200px;
   padding: 12px 16px;
   border: 2px solid var(--mat-sys-outline-variant);
-  border-radius: 24px;
+  border-radius: var(--gns3-radius-round);
   background: transparent;
   color: var(--mat-sys-on-surface);
   font-family: inherit;
@@ -188,13 +188,7 @@
   }
 
   &:hover:not(:disabled) {
-    transform: scale(1.15);
-    box-shadow: 0 8px 24px color-mix(in srgb, var(--mat-sys-tertiary) 50%, transparent);
-    background: linear-gradient(
-      135deg,
-      var(--mat-sys-tertiary),
-      color-mix(in srgb, var(--mat-sys-tertiary) 80%, black)
-    );
+    background: var(--mat-sys-tertiary);
 
     &::before {
       opacity: 1;
@@ -202,8 +196,7 @@
   }
 
   &:active:not(:disabled) {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px color-mix(in srgb, var(--mat-sys-tertiary) 30%, transparent);
+    background: color-mix(in srgb, var(--mat-sys-tertiary) 88%, var(--mat-sys-surface));
   }
 
   &:disabled {

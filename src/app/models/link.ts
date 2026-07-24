@@ -2,7 +2,6 @@ import { Node } from '../cartography/models/node';
 import { Filter } from './filter';
 import { LinkNode } from './link-node';
 import { LinkStyle } from './link-style';
-import { MarkerMap } from './marker';
 
 export class Link {
   capture_file_name: string;
@@ -17,7 +16,6 @@ export class Link {
   link_style?: LinkStyle;
   show_filters_icon: boolean; // Control visibility of filter icons on the link (from server)
   wireshark: boolean; // true for Web Wireshark, false for traditional Wireshark
-  markers?: MarkerMap; // Traffic-insight markers (non-empty ⇒ show the markers icon)
 
   distance: number; // this is not from controller
   length: number; // this is not from controller
