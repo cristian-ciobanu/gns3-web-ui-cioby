@@ -1,0 +1,113 @@
+@use '@angular/material' as mat;
+
+/*
+ * Material components reach 36px at different supported density scales.
+ * Keeping the scales component-specific avoids unsupported geometry overrides.
+ */
+$compact-field-density: mat.define-theme(
+  (
+    density: (
+      scale: -5,
+    ),
+  )
+);
+$compact-control-density: mat.define-theme(
+  (
+    density: (
+      scale: -1,
+    ),
+  )
+);
+$compact-tab-density: mat.define-theme(
+  (
+    density: (
+      scale: -3,
+    ),
+  )
+);
+
+/*
+ * Compact density is intentionally limited to the vertical axis of controls
+ * inside dialogs. Material hides filled-field labels at its densest scale, so
+ * the label padding is restored while retaining the supported 36px geometry.
+ */
+html.gns3-density-compact {
+  .mat-mdc-dialog-container {
+    --gns3-dialog-control-height: 36px;
+
+    @include mat.button-density($compact-control-density);
+    @include mat.icon-button-density($compact-control-density);
+    @include mat.checkbox-density($compact-control-density);
+    @include mat.radio-density($compact-control-density);
+    @include mat.tabs-density($compact-tab-density);
+
+    h1[mat-dialog-title],
+    h2[mat-dialog-title] {
+      margin-bottom: 12px;
+      padding-top: 16px;
+    }
+
+    .mat-mdc-dialog-content {
+      padding-top: 8px;
+      padding-bottom: 0;
+    }
+
+    .mat-mdc-dialog-actions {
+      min-height: 52px;
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+
+    .mat-mdc-form-field {
+      @include mat.form-field-density($compact-field-density);
+
+      --mat-form-field-filled-label-display: block;
+      --mat-form-field-filled-with-label-container-padding-top: 18px;
+      --mat-form-field-filled-with-label-container-padding-bottom: 0;
+      --mat-mdc-form-field-label-transform: translateY(-20px)
+        scale(var(--mat-mdc-form-field-floating-label-scale, 0.75));
+      --mat-select-arrow-transform: translateY(-8px);
+
+      .mat-mdc-floating-label {
+        line-height: 16px;
+      }
+    }
+
+    .mat-mdc-button-base,
+    .mat-mdc-tab {
+      height: var(--gns3-dialog-control-height);
+      min-height: var(--gns3-dialog-control-height);
+    }
+
+    .form-grid {
+      row-gap: 8px;
+    }
+
+    .mat-mdc-tab-body-content {
+      padding-top: 8px;
+    }
+
+    .form-field {
+      margin-bottom: 0;
+    }
+
+    mat-checkbox,
+    mat-card {
+      margin-bottom: 4px;
+    }
+
+    mat-checkbox {
+      min-height: var(--gns3-dialog-control-height);
+    }
+
+    mat-radio-button {
+      min-height: var(--gns3-dialog-control-height);
+    }
+  }
+
+  /* Select and autocomplete panels are sibling overlays of their dialog. */
+  .cdk-overlay-pane .mat-mdc-select-panel,
+  .cdk-overlay-pane .mat-mdc-autocomplete-panel {
+    --mat-option-one-line-container-height: 36px;
+  }
+}

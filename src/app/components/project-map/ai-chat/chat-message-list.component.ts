@@ -296,6 +296,9 @@ export class ChatMessageListComponent implements OnChanges, AfterViewChecked, Af
 
     this.dialog.open(ToolDetailsDialogComponent, {
       data,
+      width: '800px',
+      minWidth: '600px',
+      maxWidth: '95vw',
       panelClass: ['base-dialog-panel', 'dialog-pattern-large', 'tool-details-dialog'],
     });
   }
@@ -313,6 +316,9 @@ export class ChatMessageListComponent implements OnChanges, AfterViewChecked, Af
 
     this.dialog.open(ToolDetailsDialogComponent, {
       data,
+      width: '800px',
+      minWidth: '600px',
+      maxWidth: '95vw',
       panelClass: ['base-dialog-panel', 'dialog-pattern-large', 'tool-details-dialog'],
     });
   }

@@ -5,8 +5,7 @@
     <div class="default-content">
       <mat-card class="matCard">
         @if (name) {
-        <div >
-          <mat-tab-group>
+        <mat-tab-group disablePagination>
             <mat-tab label="General settings">
               <!-- Name field - full width -->
               <mat-form-field class="form-field">
@@ -363,10 +362,10 @@
                   </div>
                   <div class="disk-card__content">
                     <div class="form-container" style="gap: 8px;">
-                      <div style="display: flex; gap: 8px; align-items: center;">
+                      <div class="qemu-configurator__file-row">
                         <button mat-raised-button color="primary" (click)="fileinitrdDevice.click()">Upload to device</button>
                         <button mat-raised-button (click)="fileinitrdGlobal.click()">Upload globally</button>
-                        <mat-form-field class="form-field" style="flex: 1;">
+                        <mat-form-field class="form-field">
                           <mat-label>Initial RAM disk (initrd)</mat-label>
                           <input matInput type="text" [value]="initrd()" (input)="initrd.set($event.target.value); onAdvancedFileInput($event)" [matAutocomplete]="initrdAuto" #initrdTrigger="matAutocompleteTrigger" (focus)="filteredNodeFiles = allNodeFiles; filteredGlobalFiles = allGlobalFiles; initrdTrigger.openPanel(); refreshNodeFiles(); refreshQemuImages()" />
                           <mat-autocomplete #initrdAuto="matAutocomplete" (optionSelected)="initrd.set($event.option.value)">
@@ -392,10 +391,10 @@
                     </div>
 
                     <div class="form-container" style="gap: 8px;">
-                      <div style="display: flex; gap: 8px; align-items: center;">
+                      <div class="qemu-configurator__file-row">
                         <button mat-raised-button color="primary" (click)="filekernelDevice.click()">Upload to device</button>
                         <button mat-raised-button (click)="filekernelGlobal.click()">Upload globally</button>
-                        <mat-form-field class="form-field" style="flex: 1;">
+                        <mat-form-field class="form-field">
                           <mat-label>Kernel image</mat-label>
                           <input matInput type="text" [value]="kernelImage()" (input)="kernelImage.set($event.target.value); onAdvancedFileInput($event)" [matAutocomplete]="kernelAuto" #kernelTrigger="matAutocompleteTrigger" (focus)="filteredNodeFiles = allNodeFiles; filteredGlobalFiles = allGlobalFiles; kernelTrigger.openPanel(); refreshNodeFiles(); refreshQemuImages()" />
                           <mat-autocomplete #kernelAuto="matAutocomplete" (optionSelected)="kernelImage.set($event.option.value)">
@@ -433,10 +432,10 @@
                   </div>
                   <div class="disk-card__content">
                     <div class="form-container" style="gap: 8px;">
-                      <div style="display: flex; gap: 8px; align-items: center;">
+                      <div class="qemu-configurator__file-row">
                         <button mat-raised-button color="primary" (click)="filebiosDevice.click()">Upload to device</button>
                         <button mat-raised-button (click)="filebiosGlobal.click()">Upload globally</button>
-                        <mat-form-field class="form-field" style="flex: 1;">
+                        <mat-form-field class="form-field">
                           <mat-label>Bios image</mat-label>
                           <input matInput type="text" [value]="biosImage()" (input)="biosImage.set($event.target.value); onAdvancedFileInput($event)" [matAutocomplete]="biosAuto" #biosTrigger="matAutocompleteTrigger" (focus)="filteredNodeFiles = allNodeFiles; filteredGlobalFiles = allGlobalFiles; biosTrigger.openPanel(); refreshNodeFiles(); refreshQemuImages()" />
                           <mat-autocomplete #biosAuto="matAutocomplete" (optionSelected)="biosImage.set($event.option.value)">
@@ -521,8 +520,7 @@
                 <textarea matInput [value]="usage()" (input)="usage.set($event.target.value)"></textarea>
               </mat-form-field>
             </mat-tab>
-          </mat-tab-group>
-        </div>
+        </mat-tab-group>
         }
       </mat-card>
     </div>

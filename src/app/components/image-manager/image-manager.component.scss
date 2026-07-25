@@ -58,11 +58,26 @@
 
 .image-manager__toolbar {
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) 200px;
+  grid-template-columns: minmax(240px, 1fr) 200px auto;
   gap: 12px;
+  align-items: center;
   padding: 16px;
   border-bottom: 1px solid var(--mat-sys-outline-variant);
   background: var(--mat-sys-surface-container-lowest);
+}
+
+.image-manager__view-toggle {
+  justify-self: end;
+  border-color: var(--mat-sys-outline-variant);
+
+  mat-button-toggle {
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  .mat-button-toggle-checked {
+    background: var(--mat-sys-secondary-container);
+    color: var(--mat-sys-on-secondary-container);
+  }
 }
 
 .image-manager__search-field,
@@ -135,6 +150,231 @@
   min-width: 0;
   overflow-x: auto;
   background: var(--mat-sys-surface);
+}
+
+.image-manager__table-container--hidden {
+  display: none;
+}
+
+/* =============================================
+// Grid view
+// ============================================= */
+.image-manager__grid {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 14px;
+  background: var(--mat-sys-surface-container-lowest);
+}
+
+.image-manager__card {
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  background: var(--mat-sys-surface);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--mat-sys-shadow) 5%, transparent);
+  transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+
+  &:hover {
+    border-color: var(--mat-sys-outline);
+    box-shadow: 0 8px 20px color-mix(in srgb, var(--mat-sys-shadow) 10%, transparent);
+    transform: translateY(-1px);
+  }
+
+  &--selected {
+    border-color: var(--mat-sys-primary);
+    box-shadow: 0 0 0 1px var(--mat-sys-primary);
+  }
+}
+
+.image-manager__card-visual {
+  min-height: 104px;
+  padding: 16px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 22% 18%, color-mix(in srgb, var(--mat-sys-primary) 14%, transparent), transparent 42%),
+    var(--mat-sys-surface-container);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.image-manager__card-icon {
+  width: 58px;
+  height: 58px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+
+  mat-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 32px;
+  }
+}
+
+.image-manager__card-extension {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  padding: 3px 7px;
+  border-radius: var(--gns3-radius-round);
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.image-manager__card-checkbox {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+}
+
+.image-manager__card-body {
+  min-width: 0;
+  padding: 14px 16px 12px;
+  flex: 1;
+}
+
+.image-manager__card-title {
+  width: 100%;
+  padding: 0;
+  display: block;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: var(--mat-sys-on-surface);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--mat-sys-primary);
+  }
+
+  &--upload {
+    cursor: default;
+  }
+}
+
+.image-manager__card-type {
+  display: block;
+  margin-top: 3px;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 11px;
+}
+
+.image-manager__card-meta {
+  margin: 14px 0 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+
+  div {
+    min-width: 0;
+  }
+
+  dt {
+    color: var(--mat-sys-on-surface-variant);
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  dd {
+    margin: 2px 0 0;
+    overflow: hidden;
+    color: var(--mat-sys-on-surface);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.image-manager__card-path {
+  min-width: 0;
+  margin-top: 12px;
+  padding-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-top: 1px solid var(--mat-sys-outline-variant);
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 11px;
+
+  mat-icon {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    font-size: 16px;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.image-manager__card-upload {
+  margin-top: 16px;
+
+  span {
+    display: block;
+    margin-top: 6px;
+    color: var(--mat-sys-on-surface-variant);
+    font-size: 11px;
+  }
+}
+
+.image-manager__card-actions {
+  min-height: 48px;
+  padding: 4px 8px 4px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--mat-sys-outline-variant);
+  background: var(--mat-sys-surface-container-lowest);
+}
+
+.image-manager__grid-empty {
+  min-height: 280px;
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: var(--mat-sys-on-surface-variant);
+  text-align: center;
+
+  mat-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 44px;
+  }
+
+  h2 {
+    margin: 12px 0 4px;
+    color: var(--mat-sys-on-surface);
+    font-size: 18px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+  }
 }
 
 .mat-mdc-table {
@@ -399,7 +639,7 @@ mat-footer-cell {
   }
 
   .image-manager__toolbar {
-    grid-template-columns: minmax(180px, 1fr) 160px;
+    grid-template-columns: minmax(180px, 1fr) 160px auto;
   }
 
   .image-manager__table-container {
@@ -443,6 +683,19 @@ mat-footer-cell {
 @media (max-width: 640px) {
   .image-manager__toolbar {
     grid-template-columns: 1fr;
+  }
+
+  .image-manager__view-toggle {
+    justify-self: stretch;
+
+    mat-button-toggle {
+      flex: 1;
+    }
+  }
+
+  .image-manager__grid {
+    grid-template-columns: 1fr;
+    padding: 12px;
   }
 
   .mat-column-created_at {

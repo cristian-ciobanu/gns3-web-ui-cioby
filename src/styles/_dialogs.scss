@@ -21,7 +21,7 @@ $dialog-viewport-height: calc(100dvh - 32px);
 
 .dialog-pattern-small,
 .simple-dialog-panel {
-  --gns3-dialog-preferred-width: 480px;
+  --gns3-dialog-preferred-width: 500px;
 }
 
 .dialog-pattern-standard {
@@ -30,18 +30,15 @@ $dialog-viewport-height: calc(100dvh - 32px);
 
 .dialog-pattern-large,
 .configurator-dialog-panel {
-  --gns3-dialog-preferred-width: 1120px;
+  --gns3-dialog-preferred-width: 800px;
 }
 
 .cdk-overlay-pane:is(.base-dialog-panel, .base-confirmation-dialog-panel) {
-  width: min(var(--gns3-dialog-preferred-width, 720px), $dialog-viewport-width);
   max-width: $dialog-viewport-width;
   max-height: $dialog-viewport-height;
 
   mat-dialog-container,
   .mat-mdc-dialog-container {
-    width: 100%;
-    max-width: 100%;
     height: auto;
     max-height: $dialog-viewport-height;
   }
@@ -50,14 +47,11 @@ $dialog-viewport-height: calc(100dvh - 32px);
 /* Legacy content-specific panel names inherit the responsive pattern sizing.
  * New dialogs should always include one of the four dialog-pattern-* classes. */
 .cdk-overlay-pane:is([class*='dialog-panel'], .tool-details-dialog) {
-  width: min(var(--gns3-dialog-preferred-width, 720px), $dialog-viewport-width);
   max-width: $dialog-viewport-width;
   max-height: $dialog-viewport-height;
 
   mat-dialog-container,
   .mat-mdc-dialog-container {
-    width: 100%;
-    max-width: 100%;
     height: auto;
     max-height: $dialog-viewport-height;
   }
@@ -129,6 +123,17 @@ $dialog-viewport-height: calc(100dvh - 32px);
     padding: 16px 24px;
     justify-content: flex-end;
     gap: 8px;
+
+    /* Secondary and primary actions stay legible in every generated theme. */
+    button.mat-mdc-button {
+      background: var(--mat-sys-surface-container-high);
+      color: var(--mat-sys-on-surface);
+    }
+
+    button:is(.mat-mdc-raised-button, .mat-mdc-unelevated-button) {
+      background: var(--mat-sys-primary);
+      color: var(--mat-sys-on-primary);
+    }
   }
 
   /* Form fields - common width */
@@ -203,6 +208,14 @@ $dialog-viewport-height: calc(100dvh - 32px);
 // Large configurator and inspector content
 // ============================================= */
 .configurator-dialog-panel {
+  --mat-dialog-container-max-width: 800px;
+
+  mat-dialog-container,
+  .mat-mdc-dialog-container {
+    width: min(800px, $dialog-viewport-width);
+    max-width: min(800px, $dialog-viewport-width);
+  }
+
   /* Dialog content - with max-height for scroll */
   .mat-mdc-dialog-content {
     max-height: calc($dialog-viewport-height - 128px);
@@ -333,9 +346,371 @@ $dialog-viewport-height: calc(100dvh - 32px);
 }
 
 /* =============================================
+// Node configurator workspace
+// Shared by VPCS, IOS, IOU, QEMU, Docker, VM and built-in node dialogs.
+// ============================================= */
+.node-configurator-dialog-panel {
+  --gns3-node-nav-width: 184px;
+  --gns3-dialog-control-height: 56px;
+  height: min(720px, $dialog-viewport-height);
+
+  .mat-mdc-dialog-container {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .mat-mdc-dialog-surface {
+    height: 100%;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    overflow: hidden;
+    background: var(--mat-sys-surface);
+  }
+
+  h1[mat-dialog-title],
+  h2[mat-dialog-title] {
+    min-height: 60px;
+    margin: 0;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
+    background: var(--mat-sys-surface-container-lowest);
+    color: var(--mat-sys-on-surface);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+
+    &::before {
+      content: 'settings';
+      width: 30px;
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      background: var(--mat-sys-primary-container);
+      color: var(--mat-sys-on-primary-container);
+      font-family: 'Material Symbols Outlined';
+      font-size: 19px;
+      font-weight: normal;
+      line-height: 1;
+    }
+  }
+
+  .mat-mdc-dialog-surface > .modal-form-container {
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .content,
+  .default-content {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .matCard,
+  mat-card {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .mat-mdc-tab-group {
+    height: 100%;
+    min-height: 0;
+    flex-direction: row;
+  }
+
+  .mat-mdc-tab-header {
+    width: var(--gns3-node-nav-width);
+    flex: 0 0 var(--gns3-node-nav-width);
+    align-self: stretch;
+    border-right: 1px solid var(--mat-sys-outline-variant);
+    border-bottom: 0;
+    background: var(--mat-sys-surface-container-low);
+  }
+
+  .mat-mdc-tab-header-pagination {
+    display: none;
+  }
+
+  .mat-mdc-tab-label-container {
+    align-items: flex-start;
+    border: 0;
+  }
+
+  .mat-mdc-tab-list {
+    width: 100%;
+  }
+
+  .mat-mdc-tab-labels {
+    padding: 12px 10px;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .mat-mdc-tab {
+    width: 100%;
+    min-width: 0;
+    height: 44px;
+    padding: 0 12px;
+    justify-content: flex-start;
+    border-radius: 8px;
+    color: var(--mat-sys-on-surface-variant);
+    opacity: 1;
+
+    &::before {
+      content: 'tune';
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+      color: currentColor;
+      font-family: 'Material Symbols Outlined';
+      font-size: 19px;
+      font-weight: normal;
+      line-height: 20px;
+    }
+
+    &:nth-child(2)::before {
+      content: 'memory';
+    }
+
+    &:nth-child(3)::before {
+      content: 'lan';
+    }
+
+    &:nth-child(4)::before {
+      content: 'settings';
+    }
+
+    &:nth-child(5)::before {
+      content: 'description';
+    }
+
+    &:hover {
+      background: color-mix(in srgb, var(--mat-sys-on-surface) 6%, transparent);
+      color: var(--mat-sys-on-surface);
+    }
+
+    &.mdc-tab--active {
+      background: var(--mat-sys-secondary-container);
+      color: var(--mat-sys-on-secondary-container);
+    }
+
+    .mdc-tab__content {
+      justify-content: flex-start;
+    }
+
+    .mdc-tab__text-label {
+      color: currentColor;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: left;
+    }
+  }
+
+  .mdc-tab-indicator {
+    display: none;
+  }
+
+  .mat-mdc-tab-body-wrapper {
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
+    background: var(--mat-sys-surface);
+  }
+
+  .mat-mdc-tab-body {
+    max-height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .mat-mdc-tab-body.mat-mdc-tab-body-active {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .matCard .mat-mdc-tab-group .mat-mdc-tab-body-wrapper .mat-mdc-tab-body-content {
+    height: 100%;
+    min-height: 0;
+    padding: 20px 24px 24px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    box-sizing: border-box;
+  }
+
+  .form-container {
+    min-width: 0;
+  }
+
+  .form-container > mat-label:first-child,
+  .form-container > h3:first-child,
+  .form-container > h6:first-child {
+    display: block;
+    margin: 0 0 14px;
+    color: var(--mat-sys-on-surface);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .form-field,
+  mat-form-field {
+    width: 100%;
+  }
+
+  .form-grid,
+  .two-column-grid {
+    gap: 10px 16px;
+  }
+
+  .disk-cards-grid {
+    gap: 12px;
+  }
+
+  .disk-card {
+    padding: 14px;
+    border-color: var(--mat-sys-outline-variant);
+    background: var(--mat-sys-surface-container-lowest);
+
+    &:hover {
+      background: var(--mat-sys-surface-container-low);
+    }
+  }
+
+  .disk-card__header {
+    margin-bottom: 12px;
+  }
+
+  .disk-card__title {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .mat-mdc-dialog-actions {
+    min-height: 60px;
+    margin: 0;
+    padding: 10px 20px;
+    border-top: 1px solid var(--mat-sys-outline-variant);
+    background: var(--mat-sys-surface-container-lowest);
+
+    button {
+      min-width: 84px;
+    }
+  }
+
+  .qemu-configurator__file-row {
+    display: grid;
+    grid-template-columns: max-content max-content minmax(180px, 1fr);
+    gap: 8px;
+    align-items: start;
+
+    button {
+      height: var(--gns3-dialog-control-height);
+      min-height: var(--gns3-dialog-control-height);
+      margin: 0;
+      align-self: start;
+      white-space: nowrap;
+    }
+
+    mat-form-field {
+      min-width: 0;
+      margin: 0;
+    }
+  }
+
+  /* Simple node types do not use tabs; give them the same readable content surface. */
+  .matCard:not(:has(.mat-mdc-tab-group)) {
+    padding: 20px 24px;
+    overflow: auto;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 700px) {
+  .node-configurator-dialog-panel {
+    --gns3-node-nav-width: 100%;
+
+    h1[mat-dialog-title],
+    h2[mat-dialog-title] {
+      min-height: 56px;
+      padding: 0 16px;
+      font-size: 16px;
+    }
+
+    .mat-mdc-tab-group {
+      min-height: 0;
+      flex-direction: column;
+    }
+
+    .mat-mdc-tab-header {
+      width: 100%;
+      flex: 0 0 auto;
+      border-right: 0;
+      border-bottom: 1px solid var(--mat-sys-outline-variant);
+    }
+
+    .mat-mdc-tab-label-container {
+      overflow-x: auto;
+    }
+
+    .mat-mdc-tab-labels {
+      width: max-content;
+      padding: 8px;
+      flex-direction: row;
+    }
+
+    .mat-mdc-tab {
+      width: auto;
+      min-width: max-content;
+    }
+
+    .matCard .mat-mdc-tab-group .mat-mdc-tab-body-wrapper .mat-mdc-tab-body-content {
+      padding: 16px;
+    }
+
+    .disk-cards-grid,
+    .form-grid,
+    .two-column-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .qemu-configurator__file-row {
+      grid-template-columns: 1fr 1fr;
+
+      mat-form-field {
+        grid-column: 1 / -1;
+      }
+    }
+  }
+}
+
+/* =============================================
 // Small input and prompt content
 // ============================================= */
 .simple-dialog-panel {
+  --mat-dialog-container-max-width: 500px;
+
+  mat-dialog-container,
+  .mat-mdc-dialog-container {
+    width: min(500px, $dialog-viewport-width);
+    max-width: min(500px, $dialog-viewport-width);
+  }
+
   /* Dialog content - with max-height for scroll */
   .mat-mdc-dialog-content {
     max-height: calc($dialog-viewport-height - 128px);
@@ -441,7 +816,14 @@ $dialog-viewport-height: calc(100dvh - 32px);
 // Custom Adapters Dialog
 // ============================================= */
 .custom-adapters-dialog-panel {
-  --gns3-dialog-preferred-width: 1120px;
+  --gns3-dialog-preferred-width: 1000px;
+  --mat-dialog-container-max-width: 1000px;
+
+  mat-dialog-container,
+  .mat-mdc-dialog-container {
+    width: min(1000px, $dialog-viewport-width);
+    max-width: min(1000px, $dialog-viewport-width);
+  }
 
   .mat-mdc-dialog-content {
     max-height: calc($dialog-viewport-height - 128px);
@@ -473,6 +855,14 @@ $dialog-viewport-height: calc(100dvh - 32px);
 // Content-specific edit project layout
 // ============================================= */
 .edit-project-dialog-panel {
+  --gns3-dialog-preferred-width: 700px;
+
+  mat-dialog-container,
+  .mat-mdc-dialog-container {
+    width: min(700px, $dialog-viewport-width);
+    max-width: min(700px, $dialog-viewport-width);
+  }
+
   .mat-mdc-dialog-content {
     max-height: calc($dialog-viewport-height - 128px);
   }
@@ -482,7 +872,14 @@ $dialog-viewport-height: calc(100dvh - 32px);
 // Add ACE Dialog
 // ============================================= */
 .add-ace-dialog-panel {
-  --gns3-dialog-preferred-width: 1120px;
+  --gns3-dialog-preferred-width: 1000px;
+  --mat-dialog-container-max-width: 1000px;
+
+  mat-dialog-container,
+  .mat-mdc-dialog-container {
+    width: min(1000px, $dialog-viewport-width);
+    max-width: min(1000px, $dialog-viewport-width);
+  }
 
   .mat-mdc-dialog-content {
     overflow: visible;
@@ -494,14 +891,21 @@ $dialog-viewport-height: calc(100dvh - 32px);
 // New Template Dialog
 // ============================================= */
 .new-template-dialog-panel {
-  --gns3-dialog-preferred-width: 1120px;
+  --gns3-dialog-preferred-width: 800px;
+  --mat-dialog-container-max-width: 800px;
+
+  mat-dialog-container,
+  .mat-mdc-dialog-container {
+    width: min(800px, $dialog-viewport-width);
+    max-width: min(800px, $dialog-viewport-width);
+  }
 }
 
 /* =============================================
 // Tool Details Dialog
 // ============================================= */
 .tool-details-dialog {
-  --gns3-dialog-preferred-width: 1120px;
+  --gns3-dialog-preferred-width: 800px;
 
   .json-container {
     --ngx-json-string: var(--mat-sys-primary);
@@ -523,13 +927,29 @@ $dialog-viewport-height: calc(100dvh - 32px);
 // Inherits from base-dialog-panel + configurator-dialog-panel
 // ============================================= */
 .change-symbol-dialog-panel {
-  --gns3-dialog-preferred-width: 1120px;
+  --gns3-dialog-preferred-width: 800px;
+  --mat-dialog-container-max-width: 800px;
+
+  mat-dialog-container,
+  .mat-mdc-dialog-container {
+    width: min(800px, $dialog-viewport-width);
+    max-width: min(800px, $dialog-viewport-width);
+  }
 }
 
 /* =============================================
 // Nodes Menu Confirmation Dialog
 // ============================================= */
 .nodes-menu-confirmation-dialog-panel {
+  --gns3-dialog-preferred-width: 500px;
+  --mat-dialog-container-max-width: 500px;
+
+  mat-dialog-container,
+  .mat-mdc-dialog-container {
+    width: min(500px, $dialog-viewport-width);
+    max-width: min(500px, $dialog-viewport-width);
+  }
+
   .mat-mdc-dialog-content {
     max-height: calc($dialog-viewport-height - 128px);
   }
@@ -824,11 +1244,11 @@ h2[mat-dialog-title] {
 // ============================================= */
 
 .qemu-configurator-dialog-panel {
-  --gns3-dialog-preferred-width: 1120px;
+  --gns3-dialog-preferred-width: 800px;
 }
 
 .docker-configurator-dialog-panel {
-  --gns3-dialog-preferred-width: 1120px;
+  --gns3-dialog-preferred-width: 800px;
 
   /* Two column grid layout for form fields */
   .two-column-grid {
@@ -929,7 +1349,7 @@ h2[mat-dialog-title] {
 
 // Large access-control form
 .add-ace-dialog-panel {
-  --gns3-dialog-preferred-width: 1120px;
+  --gns3-dialog-preferred-width: 1000px;
 
   .mat-mdc-dialog-content {
     overflow: visible;
@@ -972,7 +1392,7 @@ h2[mat-dialog-title] {
 // Large code inspector
 // ============================================= */
 .code-block-dialog-panel {
-  --gns3-dialog-preferred-width: 1120px;
+  --gns3-dialog-preferred-width: 800px;
 
   /* Override content padding for code display */
   .mat-mdc-dialog-content {

@@ -147,6 +147,27 @@ describe('ImageManagerComponent', () => {
     });
   });
 
+  describe('grid view', () => {
+    it('should persist the selected view', () => {
+      const component = Object.create(ImageManagerComponent.prototype) as ImageManagerComponent;
+      const set = vi.fn();
+      (component as any).viewMode = { set };
+
+      component.setViewMode('grid');
+
+      expect(set).toHaveBeenCalledWith('grid');
+      expect(localStorage.getItem('imageManagerView')).toBe('grid');
+    });
+
+    it('should provide useful image card labels', () => {
+      const component = Object.create(ImageManagerComponent.prototype) as ImageManagerComponent;
+      const row = { rowType: 'image', filename: 'router.qcow2', image_type: 'qemu' } as ImageTableRow;
+
+      expect(component.imageTypeIcon(row)).toBe('memory');
+      expect(component.imageExtension(row)).toBe('QCOW2');
+    });
+  });
+
   describe('sorting and pagination', () => {
     it('should paginate the filtered data and update the total row count', async () => {
       const database = new imageDatabase();

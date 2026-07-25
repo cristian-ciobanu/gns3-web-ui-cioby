@@ -27,7 +27,7 @@ const DIALOG_PATTERNS: Record<DialogPattern, DialogConfig> = {
   },
   smallInput: {
     panelClass: ['base-dialog-panel', 'dialog-pattern-small'],
-    width: `min(480px, ${VIEWPORT_WIDTH})`,
+    width: `min(500px, ${VIEWPORT_WIDTH})`,
     maxWidth: VIEWPORT_WIDTH,
     maxHeight: VIEWPORT_HEIGHT,
   },
@@ -39,7 +39,7 @@ const DIALOG_PATTERNS: Record<DialogPattern, DialogConfig> = {
   },
   largeConfigurator: {
     panelClass: ['base-dialog-panel', 'dialog-pattern-large'],
-    width: `min(1120px, ${VIEWPORT_WIDTH})`,
+    width: `min(800px, ${VIEWPORT_WIDTH})`,
     maxWidth: VIEWPORT_WIDTH,
     maxHeight: VIEWPORT_HEIGHT,
   },

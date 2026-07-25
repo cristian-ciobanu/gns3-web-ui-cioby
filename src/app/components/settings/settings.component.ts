@@ -25,6 +25,7 @@ import { ToasterService } from '@services/toaster.service';
 import { UpdatesService } from '@services/updates.service';
 import { ControllerService } from '@services/controller.service';
 import { AiChatService } from '@services/ai-chat.service';
+import { InterfaceDensity, InterfaceDensityService } from '@services/interface-density.service';
 
 type SettingsCategory = 'general' | 'appearance' | 'workspace' | 'console' | 'privacy' | 'updates' | 'ai';
 type SettingsField =
@@ -35,7 +36,8 @@ type SettingsField =
   | 'openConsolesInWidget'
   | 'consoleCommand'
   | 'theme'
-  | 'mapTheme';
+  | 'mapTheme'
+  | 'interfaceDensity';
 
 @Component({
   selector: 'app-settings',
@@ -64,6 +66,7 @@ export class SettingsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private controllerService = inject(ControllerService);
   private aiChatService = inject(AiChatService);
+  private interfaceDensityService = inject(InterfaceDensityService);
 
   settings: Settings;
   readonly integrateLinksLabelsToLinks = model(false);
@@ -75,6 +78,7 @@ export class SettingsComponent implements OnInit {
   readonly isLoadingAiSkills = signal(false);
   readonly isDirty = signal(false);
   readonly activeCategory = signal<SettingsCategory>('general');
+  readonly interfaceDensity = signal<InterfaceDensity>('normal');
   readonly categories: { id: SettingsCategory; label: string; icon: string }[] = [
     { id: 'general', label: 'General', icon: 'tune' },
     { id: 'appearance', label: 'Appearance', icon: 'palette' },
@@ -120,6 +124,7 @@ export class SettingsComponent implements OnInit {
     this.consoleCommand.set(this.consoleService.command);
     this.mapTheme = this.themeService.savedMapTheme;
     this.currentTheme = this.themeService.getCurrentTheme();
+    this.interfaceDensity.set(this.interfaceDensityService.getDensity());
     this.cdr.markForCheck();
   }
 
@@ -177,6 +182,12 @@ export class SettingsComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
+  setInterfaceDensity(density: InterfaceDensity): void {
+    if (this.interfaceDensity() === density) return;
+    this.interfaceDensity.set(density);
+    this.markDirty('interfaceDensity');
+  }
+
   saveSettings(): void {
     this.settings = {
       ...this.settings,
@@ -208,6 +219,9 @@ export class SettingsComponent implements OnInit {
     }
     if (this.dirtyFields.has('mapTheme')) {
       this.themeService.setMapTheme(this.mapTheme as 'light' | 'dark' | 'auto');
+    }
+    if (this.dirtyFields.has('interfaceDensity')) {
+      this.interfaceDensityService.setDensity(this.interfaceDensity());
     }
     this.dirtyFields.clear();
     this.isDirty.set(false);

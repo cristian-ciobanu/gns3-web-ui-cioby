@@ -311,6 +311,30 @@ describe('ProjectsComponent', () => {
     });
   });
 
+  describe('project details inspector', () => {
+    it('should open and close project details', () => {
+      fixture.detectChanges();
+
+      component.openProjectDetails(mockProjects[0]);
+      expect(component.detailsProject()).toBe(mockProjects[0]);
+
+      component.closeProjectDetails();
+      expect(component.detailsProject()).toBeNull();
+    });
+
+    it('should format project location and workspace dimensions', () => {
+      const project = {
+        ...mockProjects[0],
+        path: '/projects/lab-a',
+        scene_width: 1920,
+        scene_height: 1080,
+      } as Project;
+
+      expect(component.projectLocation(project)).toBe('/projects/lab-a');
+      expect(component.projectDimensions(project)).toBe('1920 × 1080');
+    });
+  });
+
   describe('sorting', () => {
     it('should sort projects by name in ascending order by default', () => {
       fixture.detectChanges();

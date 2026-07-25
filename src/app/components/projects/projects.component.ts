@@ -76,6 +76,7 @@ export class ProjectsComponent implements OnInit {
   readonly sort = viewChild<MatSort>(MatSort);
   readonly searchText = model('');
   readonly statusFilter = model<'all' | 'opened' | 'closed'>('all');
+  readonly detailsProject = signal<Project | null>(null);
 
   // ── Signal state ──────────────────────────────────────────────
   private _projects = signal<Project[]>([]);
@@ -181,6 +182,12 @@ export class ProjectsComponent implements OnInit {
     this.projectService.list(this.controller).subscribe({
       next: (projects: Project[]) => {
         this._projects.set(projects);
+        const detailsProject = this.detailsProject();
+        if (detailsProject) {
+          this.detailsProject.set(
+            projects.find((project) => project.project_id === detailsProject.project_id) || null
+          );
+        }
       },
       error: (err) => {
         const message = err.error?.message || err.message || 'Failed to list projects';
@@ -210,6 +217,9 @@ export class ProjectsComponent implements OnInit {
       }
       return list;
     });
+    if (notification.event.project_id === this.detailsProject()?.project_id) {
+      this.detailsProject.set(notification.action === 'project.deleted' ? null : notification.event);
+    }
   }
 
   // ── Loading state ─────────────────────────────────────────────
@@ -264,6 +274,23 @@ export class ProjectsComponent implements OnInit {
     this.searchText.set('');
     this.statusFilter.set('all');
     this.selection.clear();
+  }
+
+  openProjectDetails(project: Project): void {
+    this.detailsProject.set(project);
+  }
+
+  closeProjectDetails(): void {
+    this.detailsProject.set(null);
+  }
+
+  projectLocation(project: Project): string {
+    return project.path || project.filename || 'Default project directory';
+  }
+
+  projectDimensions(project: Project): string {
+    if (!project.scene_width || !project.scene_height) return 'Not specified';
+    return `${project.scene_width} × ${project.scene_height}`;
   }
 
   // ── CRUD operations ───────────────────────────────────────────

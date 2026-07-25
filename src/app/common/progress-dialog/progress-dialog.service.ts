@@ -8,6 +8,7 @@ export class ProgressDialogService {
 
   public open() {
     const ref = this.dialog.open(ProgressDialogComponent, {
+      width: '250px',
       panelClass: ['base-dialog-panel', 'dialog-pattern-small'],
       autoFocus: false,
       disableClose: true,

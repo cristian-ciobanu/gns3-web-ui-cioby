@@ -53,6 +53,43 @@
 
         <div class="settings__theme-section">
           <div class="settings__section-heading">
+            <h3>Interface density</h3>
+            <p>Choose the vertical spacing used by controls inside dialog boxes.</p>
+          </div>
+          <div class="settings__density-options" role="radiogroup" aria-label="Interface density">
+            <button
+              type="button"
+              role="radio"
+              class="settings__density-option"
+              [class.settings__density-option--selected]="interfaceDensity() === 'normal'"
+              [attr.aria-checked]="interfaceDensity() === 'normal'"
+              (click)="setInterfaceDensity('normal')"
+            >
+              <mat-icon>density_medium</mat-icon>
+              <span><strong>Normal</strong><small>Standard vertical spacing</small></span>
+              @if (interfaceDensity() === 'normal') {
+              <mat-icon class="settings__density-check">check_circle</mat-icon>
+              }
+            </button>
+            <button
+              type="button"
+              role="radio"
+              class="settings__density-option"
+              [class.settings__density-option--selected]="interfaceDensity() === 'compact'"
+              [attr.aria-checked]="interfaceDensity() === 'compact'"
+              (click)="setInterfaceDensity('compact')"
+            >
+              <mat-icon>density_small</mat-icon>
+              <span><strong>Compact</strong><small>Reduced vertical spacing</small></span>
+              @if (interfaceDensity() === 'compact') {
+              <mat-icon class="settings__density-check">check_circle</mat-icon>
+              }
+            </button>
+          </div>
+        </div>
+
+        <div class="settings__theme-section">
+          <div class="settings__section-heading">
             <h3>Application theme</h3>
             <p>Controls application surfaces, navigation, text, and components.</p>
           </div>

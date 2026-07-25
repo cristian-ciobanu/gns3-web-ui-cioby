@@ -12,6 +12,7 @@ import { GlobalUploadIndicatorComponent } from './components/global-upload-indic
 import { ConnectionManagerService } from '@services/connection-manager.service';
 import { ControllerService } from '@services/controller.service';
 import { filter } from 'rxjs/operators';
+import { InterfaceDensityService } from '@services/interface-density.service';
 
 @Component({
   selector: 'app-root',
@@ -33,6 +34,7 @@ export class AppComponent implements OnInit {
   private progressService = inject(ProgressService);
   private connectionManager = inject(ConnectionManagerService);
   private controllerService = inject(ControllerService);
+  private interfaceDensityService = inject(InterfaceDensityService);
 
   constructor() {
     this.iconReg.addSvgIcon('gns3', this.sanitizer.bypassSecurityTrustResourceUrl('./assets/gns3_icon.svg'));

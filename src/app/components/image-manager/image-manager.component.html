@@ -54,6 +54,21 @@
               }
             </mat-select>
           </mat-form-field>
+
+          <mat-button-toggle-group
+            class="image-manager__view-toggle"
+            aria-label="Image manager view"
+            [value]="viewMode()"
+            (change)="setViewMode($event.value)"
+            hideSingleSelectionIndicator
+          >
+            <mat-button-toggle value="list" matTooltip="List view" aria-label="List view">
+              <mat-icon>view_list</mat-icon>
+            </mat-button-toggle>
+            <mat-button-toggle value="grid" matTooltip="Grid view" aria-label="Grid view">
+              <mat-icon>grid_view</mat-icon>
+            </mat-button-toggle>
+          </mat-button-toggle-group>
         </div>
 
         @if (hasSelection()) {
@@ -80,7 +95,10 @@
         </div>
         }
 
-        <div class="image-manager__table-container">
+        <div
+          class="image-manager__table-container"
+          [class.image-manager__table-container--hidden]="viewMode() !== 'list'"
+        >
           <mat-table #table [dataSource]="dataSource" [trackBy]="trackByRow" matSort>
             <ng-container matColumnDef="select">
               <mat-header-cell *matHeaderCellDef>
@@ -195,8 +213,94 @@
               [class.image-manager__row-selected]="isRowSelected(row)"
             ></mat-row>
           </mat-table>
-          <mat-paginator [pageSizeOptions]="pageSizeOptions" showFirstLastButtons> </mat-paginator>
         </div>
+
+        @if (viewMode() === 'grid') {
+        <div class="image-manager__grid" aria-label="Image grid">
+          @for (row of visibleRows(); track trackByRow($index, row)) {
+          <article
+            class="image-manager__card"
+            [class.image-manager__card--selected]="isRowSelected(row)"
+            [class.image-manager__row-highlight]="isHighlighted(row)"
+          >
+            <div class="image-manager__card-visual">
+              <span class="image-manager__card-icon"><mat-icon>{{ imageTypeIcon(row) }}</mat-icon></span>
+              <span class="image-manager__card-extension">{{ imageExtension(row) }}</span>
+              <mat-checkbox
+                class="image-manager__card-checkbox"
+                (click)="onRowCheckboxClick($event, row)"
+                [checked]="isRowSelected(row)"
+                [disabled]="!isPersistedRow(row)"
+                [attr.aria-label]="'Select ' + row.filename"
+              ></mat-checkbox>
+            </div>
+
+            <div class="image-manager__card-body">
+              @if (isPersistedRow(row)) {
+              <button class="image-manager__card-title" type="button" (click)="openImageDetails(row)">
+                {{ row.filename }}
+              </button>
+              } @else {
+              <span class="image-manager__card-title image-manager__card-title--upload">{{ row.filename }}</span>
+              }
+              <span class="image-manager__card-type">{{ row.image_type || 'Unknown type' }}</span>
+
+              @if (hasUploadState(row)) {
+              <div class="image-manager__card-upload">
+                <mat-progress-bar mode="determinate" [value]="row.uploadProgress || 0"></mat-progress-bar>
+                <span [class.image-manager__upload-error]="row.uploadStatus === 'error'">
+                  {{ row.uploadStatus | titlecase }} · {{ row.uploadProgress || 0 }}%
+                </span>
+              </div>
+              } @else {
+              <dl class="image-manager__card-meta">
+                <div><dt>Size</dt><dd>{{ formatImageSize(row) }}</dd></div>
+                <div><dt>Format</dt><dd>{{ imageExtension(row) }}</dd></div>
+                <div><dt>Created</dt><dd>{{ row.created_at ? (row.created_at | date : 'mediumDate') : '-' }}</dd></div>
+                <div><dt>Updated</dt><dd>{{ row.updated_at ? (row.updated_at | date : 'mediumDate') : '-' }}</dd></div>
+              </dl>
+              <div class="image-manager__card-path" [matTooltip]="row.path || ''">
+                <mat-icon>folder</mat-icon>
+                <span>{{ row.path || 'No path available' }}</span>
+              </div>
+              }
+            </div>
+
+            <div class="image-manager__card-actions">
+              @if (isPersistedRow(row)) {
+              <button mat-button type="button" (click)="openImageDetails(row)">
+                <mat-icon>info</mat-icon>
+                Details
+              </button>
+              <button
+                mat-icon-button
+                type="button"
+                class="image-manager__delete-action"
+                matTooltip="Delete image"
+                (click)="deleteFile(row.path)"
+                [attr.aria-label]="'Delete ' + row.filename"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+              } @else if (row.uploadStatus === 'uploading' || row.uploadStatus === 'queued') {
+              <button mat-button type="button" (click)="cancelUpload(row)">
+                <mat-icon>cancel</mat-icon>
+                Cancel upload
+              </button>
+              }
+            </div>
+          </article>
+          } @empty {
+          <div class="image-manager__grid-empty">
+            <mat-icon>image_search</mat-icon>
+            <h2>No matching images</h2>
+            <p>Try a different search term or image type.</p>
+          </div>
+          }
+        </div>
+        }
+
+        <mat-paginator [pageSizeOptions]="pageSizeOptions" showFirstLastButtons> </mat-paginator>
       </section>
 
       @if (detailsRow) {

@@ -142,6 +142,7 @@ export class RoleManagementComponent implements OnInit, AfterViewInit {
   addRole() {
     const dialogRef = this.dialog
       .open(AddRoleDialogComponent, {
+        width: '400px',
         panelClass: ['base-dialog-panel', 'dialog-pattern-small'],
         autoFocus: false,
         disableClose: true,

@@ -1543,6 +1543,7 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
 
   addNewProject() {
     const dialogRef = this.dialog.open(AddBlankProjectDialogComponent, {
+      width: '400px',
       panelClass: ['base-dialog-panel', 'dialog-pattern-small'],
       autoFocus: false,
       disableClose: true,
@@ -1553,6 +1554,7 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
 
   saveProject() {
     const dialogRef = this.dialog.open(SaveProjectDialogComponent, {
+      width: '400px',
       panelClass: ['base-dialog-panel', 'dialog-pattern-small'],
       autoFocus: false,
       disableClose: true,
@@ -1583,6 +1585,7 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
   importProject() {
     let uuid: string = '';
     const dialogRef = this.dialog.open(ImportProjectDialogComponent, {
+      width: '400px',
       panelClass: ['base-dialog-panel', 'dialog-pattern-small'],
       autoFocus: false,
       disableClose: true,
@@ -1723,6 +1726,7 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
 
   public addNewTemplate() {
     const dialogRef = this.dialog.open(NewTemplateDialogComponent, {
+      width: '800px',
       autoFocus: false,
       disableClose: true,
       panelClass: [
@@ -1739,6 +1743,7 @@ export class ProjectMapComponent implements OnInit, OnDestroy {
 
   public showReadme() {
     const dialogRef = this.dialog.open(ProjectReadmeComponent, {
+      width: '600px',
       panelClass: ['base-dialog-panel', 'dialog-pattern-standard'],
       autoFocus: false,
       disableClose: true,

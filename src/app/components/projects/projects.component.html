@@ -36,6 +36,7 @@
     >
   </div>
 
+  <div class="projects__workspace-layout" [class.projects__workspace-layout--inspecting]="!!detailsProject()">
   <section class="projects__workspace" aria-label="Project list">
     <div class="projects__toolbar">
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="projects__search">
@@ -146,6 +147,15 @@
               <div class="projects__row-actions">
                 <button
                   mat-icon-button
+                  matTooltip="Project details"
+                  matTooltipClass="custom-tooltip"
+                  (click)="openProjectDetails(row)"
+                  [attr.aria-label]="'View details for ' + row.name"
+                >
+                  <mat-icon>info</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
                   matTooltip="Open workspace"
                   matTooltipClass="custom-tooltip"
                   (click)="openWorkspace(row)"
@@ -241,4 +251,82 @@
     </div>
     }
   </section>
+  @if (detailsProject(); as projectDetails) {
+  <aside class="projects__details" aria-label="Project details">
+    <div class="projects__details-hero">
+      <div class="projects__details-heading">
+        <span class="projects__details-icon"><mat-icon>account_tree</mat-icon></span>
+        <div>
+          <span class="projects__details-eyebrow">Project details</span>
+          <h2>{{ projectDetails.name }}</h2>
+        </div>
+      </div>
+      <button mat-icon-button type="button" (click)="closeProjectDetails()" aria-label="Close project details">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="projects__details-status">
+      <span
+        class="projects__status"
+        [class.projects__status--opened]="projectDetails.status === 'opened'"
+        [class.projects__status--closed]="projectDetails.status !== 'opened'"
+      >
+        <mat-icon>circle</mat-icon>
+        {{ projectDetails.status === 'opened' ? 'Opened' : 'Closed' }}
+      </span>
+      @if (projectDetails.readonly) {
+      <span class="projects__readonly"><mat-icon>lock</mat-icon> Read-only</span>
+      }
+    </div>
+
+    <dl class="projects__details-list">
+      <div>
+        <dt>Owner</dt>
+        <dd>{{ projectDetails.created_by || 'Unknown' }}</dd>
+      </div>
+      <div>
+        <dt>Project ID</dt>
+        <dd class="projects__details-mono">{{ projectDetails.project_id }}</dd>
+      </div>
+      <div>
+        <dt>Location</dt>
+        <dd>{{ projectLocation(projectDetails) }}</dd>
+      </div>
+      <div>
+        <dt>Workspace</dt>
+        <dd>{{ projectDimensions(projectDetails) }}</dd>
+      </div>
+      <div>
+        <dt>Grid size</dt>
+        <dd>{{ projectDetails.grid_size || projectDetails.drawing_grid_size || 'Default' }}</dd>
+      </div>
+      <div>
+        <dt>Automation</dt>
+        <dd>
+          {{ projectDetails.auto_open ? 'Auto-open' : 'Manual open' }} ·
+          {{ projectDetails.auto_start ? 'Auto-start' : 'Manual start' }}
+        </dd>
+      </div>
+    </dl>
+
+    <div class="projects__details-actions">
+      <button mat-flat-button color="primary" type="button" (click)="openWorkspace(projectDetails)">
+        <mat-icon>open_in_new</mat-icon>
+        Open workspace
+      </button>
+      <button mat-stroked-button type="button" (click)="editProject(projectDetails)">
+        <mat-icon>edit</mat-icon>
+        Edit
+      </button>
+      <button mat-icon-button type="button" matTooltip="Duplicate project" (click)="duplicate(projectDetails)">
+        <mat-icon>content_copy</mat-icon>
+      </button>
+      <button mat-icon-button type="button" matTooltip="Export project" (click)="exportSelectProject(projectDetails)">
+        <mat-icon>download</mat-icon>
+      </button>
+    </div>
+  </aside>
+  }
+  </div>
 </section>

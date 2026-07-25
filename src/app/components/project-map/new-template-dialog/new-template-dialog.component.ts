@@ -698,6 +698,7 @@ export class NewTemplateDialogComponent implements OnInit, AfterViewInit {
 
   showInfo(object: Appliance) {
     let dialogRef = this.dialog.open(ApplianceInfoDialogComponent, {
+      width: '250px',
       panelClass: ['base-dialog-panel', 'dialog-pattern-small'],
       data: { appliance: object },
     });
@@ -912,6 +913,7 @@ export class NewTemplateDialogComponent implements OnInit, AfterViewInit {
     iouTemplate.template_type = 'iou';
 
     const dialogRef = this.dialog.open(TemplateNameDialogComponent, {
+      width: '400px',
       autoFocus: false,
       disableClose: true,
       panelClass: [
@@ -978,6 +980,7 @@ export class NewTemplateDialogComponent implements OnInit, AfterViewInit {
     iosTemplate.template_type = 'dynamips';
 
     const dialogRef = this.dialog.open(TemplateNameDialogComponent, {
+      width: '400px',
       autoFocus: false,
       disableClose: true,
       panelClass: [
@@ -1027,6 +1030,7 @@ export class NewTemplateDialogComponent implements OnInit, AfterViewInit {
     dockerTemplate.template_type = 'docker';
 
     const dialogRef = this.dialog.open(TemplateNameDialogComponent, {
+      width: '400px',
       autoFocus: false,
       disableClose: true,
       panelClass: [
@@ -1103,6 +1107,7 @@ export class NewTemplateDialogComponent implements OnInit, AfterViewInit {
     qemuTemplate.platform = this.applianceToInstall.qemu.arch;
 
     const dialogRef = this.dialog.open(TemplateNameDialogComponent, {
+      width: '400px',
       autoFocus: false,
       disableClose: true,
       panelClass: [

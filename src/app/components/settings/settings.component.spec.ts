@@ -9,6 +9,7 @@ import { UpdatesService } from '@services/updates.service';
 import { ControllerService } from '@services/controller.service';
 import { AiChatService } from '@services/ai-chat.service';
 import { ConsoleService } from '@services/settings/console.service';
+import { InterfaceDensityService } from '@services/interface-density.service';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 describe('SettingsComponent', () => {
@@ -23,6 +24,7 @@ describe('SettingsComponent', () => {
   let mockControllerService: any;
   let mockAiChatService: any;
   let mockConsoleService: any;
+  let mockInterfaceDensityService: any;
   let mockActivatedRoute: any;
   let windowOpenSpy: ReturnType<typeof vi.spyOn>;
 
@@ -110,6 +112,11 @@ describe('SettingsComponent', () => {
       command: 'telnet %h %p',
     };
 
+    mockInterfaceDensityService = {
+      getDensity: vi.fn().mockReturnValue('normal'),
+      setDensity: vi.fn(),
+    };
+
     mockActivatedRoute = {
       snapshot: {
         paramMap: {
@@ -129,6 +136,7 @@ describe('SettingsComponent', () => {
         { provide: ControllerService, useValue: mockControllerService },
         { provide: AiChatService, useValue: mockAiChatService },
         { provide: ConsoleService, useValue: mockConsoleService },
+        { provide: InterfaceDensityService, useValue: mockInterfaceDensityService },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
       ],
     }).compileComponents();
@@ -157,6 +165,7 @@ describe('SettingsComponent', () => {
     it('should initialize theme settings', () => {
       expect(component.mapTheme).toBe('auto');
       expect(component.currentTheme).toBe('deeppurple-amber');
+      expect(component.interfaceDensity()).toBe('normal');
     });
 
     it('should initialize the console command', () => {
@@ -190,6 +199,7 @@ describe('SettingsComponent', () => {
         mockThemes.length + mockMapBackgrounds.length
       );
       expect(element.textContent).toContain('Save Settings');
+      expect(element.querySelectorAll('.settings__density-option')).toHaveLength(2);
     });
   });
 
@@ -267,6 +277,18 @@ describe('SettingsComponent', () => {
 
       expect(component.activeCategory()).toBe('appearance');
       expect(mockSettingsService.setAll).not.toHaveBeenCalled();
+    });
+
+    it('should stage interface density and apply it only when Save is clicked', () => {
+      component.setInterfaceDensity('compact');
+
+      expect(component.interfaceDensity()).toBe('compact');
+      expect(component.isDirty()).toBe(true);
+      expect(mockInterfaceDensityService.setDensity).not.toHaveBeenCalled();
+
+      component.saveSettings();
+
+      expect(mockInterfaceDensityService.setDensity).toHaveBeenCalledWith('compact');
     });
 
     it('should save the complete current settings snapshot from the global action', () => {

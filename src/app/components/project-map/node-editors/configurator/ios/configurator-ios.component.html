@@ -5,7 +5,7 @@
     <div class="default-content">
       <mat-card class="matCard">
         @if (name) {
-        <mat-tab-group>
+        <mat-tab-group disablePagination>
           <mat-tab label="General settings">
             <br />
             <mat-label>Platform: {{ node.properties.platform }}</mat-label>

@@ -166,6 +166,7 @@ export class ImportProjectDialogComponent implements OnInit {
 
   openConfirmationDialog(existingProject: Project): void {
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      width: '300px',
       panelClass: [
         'base-confirmation-dialog-panel',
         'dialog-pattern-confirmation',

@@ -35,6 +35,9 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSelectModule } from '@angular/material/select';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+
+type ImageManagerView = 'list' | 'grid';
 
 @Component({
   selector: 'app-image-manager',
@@ -55,6 +58,7 @@ import { MatSelectModule } from '@angular/material/select';
     MatProgressBarModule,
     MatSelectModule,
     MatTooltipModule,
+    MatButtonToggleModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -67,6 +71,10 @@ export class ImageManagerComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly searchText = model('');
   readonly imageTypeFilter = model('all');
   readonly imageTypes = signal<string[]>([]);
+  readonly viewMode = signal<ImageManagerView>(
+    localStorage.getItem('imageManagerView') === 'grid' ? 'grid' : 'list'
+  );
+  readonly visibleRows = signal<ImageTableRow[]>([]);
   selectedPaths = new Set<string>();
   detailsRow: ImageTableRow | null = null;
   private images: Image[] = [];
@@ -139,6 +147,7 @@ export class ImageManagerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.dataSource = new imageDataSource(this.imageDatabase, sort, paginator);
     this.dataRowsSubscription = this.dataSource.connect().subscribe((rows: ImageTableRow[]) => {
       this.displayedRows = rows || [];
+      this.visibleRows.set(rows || []);
       this.cd.markForCheck();
     });
     this.cd.detectChanges();
@@ -197,6 +206,25 @@ export class ImageManagerComponent implements OnInit, AfterViewInit, OnDestroy {
         paginator.pageIndex = 0;
       }
     }
+  }
+
+  setViewMode(viewMode: ImageManagerView): void {
+    this.viewMode.set(viewMode);
+    localStorage.setItem('imageManagerView', viewMode);
+  }
+
+  imageTypeIcon(row: ImageTableRow): string {
+    const type = String(row.image_type || '').toLowerCase();
+    if (type.includes('qemu')) return 'memory';
+    if (type.includes('docker')) return 'deployed_code';
+    if (type.includes('iou') || type.includes('ios')) return 'router';
+    return 'hard_drive';
+  }
+
+  imageExtension(row: ImageTableRow): string {
+    const filename = row.filename || '';
+    const extension = filename.includes('.') ? filename.split('.').pop() : '';
+    return extension ? extension.toUpperCase() : 'IMAGE';
   }
 
   isHighlighted(row: ImageTableRow): boolean {
